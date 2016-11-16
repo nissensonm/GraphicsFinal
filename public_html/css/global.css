@@ -1,0 +1,216 @@
+/* 
+    Created on : Sep 30, 2016, 5:46:04 PM
+    Author     : Andrew Hoke
+*/
+
+*::selection {
+    background-color: #4b2e84;
+    color: white;
+}
+
+body {
+    background: black url('../images/bg-lg.jpg') no-repeat fixed;
+    font-family: 'Roboto',Arial,sans-serif;
+    color: #101010;
+    margin: 0;
+}
+
+h1, h2, h3 {
+    font-family: 'Trebuchet MS',Arial,sans-serif;
+    margin: 4px 0px 4px 0px;
+}
+
+h3 {
+    font-size: 14pt;
+}
+
+hr {
+    border: none;
+    border-bottom: 1px solid #DDDDDD;
+}
+
+input[type="number"] {
+    width: 60px;
+}
+
+button {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    transition: all linear 0.05s;
+    background-color: #EEEEEE;
+    border: 1px solid #4b2e84;
+    font-family: 'Roboto',Arial,sans-serif;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: white;
+    border-color: #9770E5;
+}
+
+button:active {
+    background-color: #DDDDDD;
+}
+
+footer {
+    width: 800px;
+    margin: 16px auto 4px auto;
+    font-size: 0.9em;
+    color: white;
+    text-shadow: 1px 1px 0 black;
+}
+
+canvas {
+    border: 1px solid black;
+    cursor: crosshair !important;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.centered {
+    text-align: center;
+    margin: auto auto;
+}
+
+.clearfix {
+    clear: both;
+}
+
+.divider-right {
+    border-right: 1px solid #DDDDDD;
+}
+
+.divider-bottom {
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #DDDDDD;
+}
+
+.panel {
+    background-color: white;
+    border: 1px solid #202020;
+    border-top-color: #606060;
+    border-bottom-color: black;
+    margin: 0px auto 8px auto;
+    padding: 4px 4px 16px 4px;
+    width: 850px;
+    box-shadow: #404040 2px 2px 4px;
+}
+
+.panel.wide {
+    width: 1200px;
+}
+
+body>.panel {
+    min-height: 650px;
+}
+
+.page-title {
+    background-color: white;
+    color: #4b2e84;
+    border-bottom: 2px solid #666;
+    width: 100%;
+    margin-top: 0px;
+    margin-bottom: 16px;
+    padding: 4px;
+}
+
+form>*, .panel>* {
+    display: table;
+}
+
+.radio-label:hover, .radio-label:hover > input, select:hover {
+    cursor: pointer;
+}
+
+.shape-select {
+    width: 100%;
+}
+
+.big-button {
+    width: 200px;
+    height: 70px;
+    font-size: 1.33em;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.medium-button {
+    width: 180px;
+    height: 30px;
+    font-size: 1.02em;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.expander-btn {
+    transition: background-color linear 0.1s;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 1px solid #101010;
+    background-color: #4b2e84;
+    color: white;
+    text-align: center;
+    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.expander-btn:hover {
+    background-color: #9770E5;
+}
+
+.small-text-box {
+    width: 48px;
+}
+
+.medium-text-box {
+    width: 72px;
+}
+
+.large-text-box {
+    width: 128px;
+}
+
+.inline-note {
+    font-size: 0.9em;
+    color: #202020;
+    font-style: italic;
+}
+.inline-note::before {
+    content: "*Note: ";
+}
+
+.data-panel {
+    display: inline-block;
+    width: calc(50% - 20px);
+    margin: 8px;
+}
+
+.data-table {
+    width: 100%;
+}
+.data-table tr td {
+    padding: 6px;
+/*    width: 50%;*/
+    vertical-align: top;
+}
+.data-table .view-controls {
+    width: 600px;
+}
+.data-table table td {
+    padding-top: 0;
+    padding-bottom: 0;
+    vertical-align: bottom;
+}
+.data-table table td>* {
+    vertical-align: bottom;
+}
