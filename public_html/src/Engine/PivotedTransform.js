@@ -11,7 +11,7 @@
 
 function PivotedTransform() {
     Transform.call(this);
-    this.mPivot = vec2.fromValues(0, 0);  // this is the pivot
+    this._pivot = vec2.fromValues(0, 0);  // this is the pivot
 }
 gEngine.Core.inheritPrototype(PivotedTransform, Transform);
 
@@ -19,11 +19,11 @@ gEngine.Core.inheritPrototype(PivotedTransform, Transform);
 
 //<editor-fold desc="Setter/Getter methods">
 PivotedTransform.prototype.setPivot = function (xPos, yPos) { this.setPivotXPos(xPos); this.setPivotYPos(yPos); };
-PivotedTransform.prototype.getPivot = function () { return this.mPivot; };
-PivotedTransform.prototype.getPivotXPos = function () { return this.mPivot[0]; };
-PivotedTransform.prototype.setPivotXPos = function (xPos) { this.mPivot[0] = xPos; };
-PivotedTransform.prototype.getPivotYPos = function () { return this.mPivot[1]; };
-PivotedTransform.prototype.setPivotYPos = function (yPos) { this.mPivot[1] = yPos; };
+PivotedTransform.prototype.getPivot = function () { return this._pivot; };
+PivotedTransform.prototype.getPivotXPos = function () { return this._pivot[0]; };
+PivotedTransform.prototype.setPivotXPos = function (xPos) { this._pivot[0] = xPos; };
+PivotedTransform.prototype.getPivotYPos = function () { return this._pivot[1]; };
+PivotedTransform.prototype.setPivotYPos = function (yPos) { this._pivot[1] = yPos; };
 //</editor-fold>
 //
 // returns the matrix the concatenates the transformations defined

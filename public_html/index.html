@@ -6,7 +6,7 @@ and open the template in the editor.
 -->
 <html>
     <head>
-        <title>MP4 | WC & Viewports</title>
+        <title>MP5 | Hierarchical Modeling and Direct Manipulation</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -28,6 +28,8 @@ and open the template in the editor.
         <script type="text/javascript" src="src/Engine/SquareRenderable.js"></script>
         <script type="text/javascript" src="src/Engine/SimpleShader.js"></script>
         <script type="text/javascript" src="src/Engine/Transform.js"></script>
+        <script type="text/javascript" src="src/Engine/PivotedTransform.js"></script>
+        <script type="text/javascript" src="src/Engine/SceneNode.js"></script>
         <script type="text/javascript" src="src/GUI/CanvasMouseSupport.js"></script>
         <script type="text/javascript" src="src/GUI/SquareArea.js"></script>
 
@@ -39,8 +41,8 @@ and open the template in the editor.
         <!-- Main controller -->
         <script type="text/javascript" src="src/controller.js"></script>
     </head>
-    <body ng-app="mp4" ng-controller="mp4Controller">
-        <h1 class="page-title">MP4 WC & Viewports</h1>
+    <body ng-app="mp5" ng-controller="mp5Controller">
+        <h1 class="page-title">MP5 Hierarchical Modeling and Direct Manipulation</h1>
 
         <div class="panel wide">
             <table class="data-table">
@@ -72,78 +74,6 @@ and open the template in the editor.
                                     <input type="number" min="-200" max="200" ng-model="wcPosY" ng-change="onViewGuiChange('wcy')" string-to-number>
                                 </td>
                             </tr>
-                            <tr>
-                                <th colspan="2">Viewport:</th>
-                            </tr>
-                            <tr>
-                                <td>Left</td>
-                                <td>
-                                    <input type="range" min="0" max="800" ng-model="vpLeft" ng-change="onViewGuiChange('vpl')"> 
-                                    <input type="number" min="0" max="800" ng-model="vpLeft" ng-change="onViewGuiChange('vpl')" string-to-number>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Bottom</td>
-                                <td>
-                                    <input type="range" min="0" max="800" ng-model="vpBottom" ng-change="onViewGuiChange('vpb')">
-                                    <input type="number" min="0" max="800" ng-model="vpBottom" ng-change="onViewGuiChange('vpb')" string-to-number>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Width</td>
-                                <td>
-                                    <input type="range" min="0" max="800" ng-model="vpWidth" ng-change="onViewGuiChange('vpw')"> 
-                                    <input type="number" min="0" max="800" ng-model="vpWidth" ng-change="onViewGuiChange('vpw')" string-to-number>
-                                </td>
-                            </tr>
-                            <tr class="divider-bottom">
-                                <td>Height</td>
-                                <td>
-                                    <input type="range" min="0" max="800" ng-model="vpHeight" ng-change="onViewGuiChange('vph')">
-                                    <input type="number" min="0" max="800" ng-model="vpHeight" ng-change="onViewGuiChange('vph')" string-to-number>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th colspan="2">Mouse Positions:</th>
-                            </tr>
-                            <tr>
-                                <td colspan="2">
-                                    Client: ({{clientX + "," + clientY}})
-                                    <br>
-                                    Canvas: ({{canvasX + "," + canvasY}})
-                                    <br>
-                                    Viewport: ({{vpX + "," + vpY}})
-
-                                    <hr>
-
-                                    Camera: {{targetCam}}
-                                    <br>
-                                    Camera: ({{camX + "," + camY}})
-                                </td>
-                            </tr>
-                            <tr>
-                                <th colspan="2">Options:</th>
-                            </tr>
-                            <tr>
-                                <td>Border thickness:</td>
-                                <td>
-                                    <input type="number" min="1" max="5" string-to-number ng-model="borderThickness" ng-change="updateBorderThickness()">
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Grabber size:</td>
-                                <td>
-                                    <input type="number" min="1" max="10" string-to-number ng-model="grabberSize" ng-change="updateGrabberSize()">
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">
-                                    <label>
-                                        <input type="checkbox" ng-model="showGrabbers" ng-change="updateGrabberVisibility()">
-                                        Display grabbers
-                                    </label>
-                                </td>
-                            </tr>
                         </table>
                     </td>
                     <td>
@@ -157,7 +87,7 @@ and open the template in the editor.
         </div>
 
         <footer>
-            Created by Andrew Hoke for Kelvin Sung's CSS450 class. © 2016 All Rights Reserved.
+            Created by Andrew Hoke and Michael Nissenson for Kelvin Sung's CSS450 class. © 2016 All Rights Reserved.
         </footer>
     </body>
 </html>

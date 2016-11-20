@@ -2,7 +2,7 @@
 /*global document, $, angular, console, alert*/
 /* jslint node: true, vars: true */
 
-var module = angular.module('mp4', []);
+var module = angular.module('mp5', []);
 
 // From error fix example at http://docs.angularjs.org/error/ngModel/numfmt?p0=0
 module.directive('stringToNumber', function () {
@@ -20,7 +20,7 @@ module.directive('stringToNumber', function () {
     };
 });
 
-module.controller('mp4Controller', ["$scope", "$interval", function ($scope, $interval) {
+module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $interval) {
     'use strict';
     // Potentially saves on canvas redraws by limiting the number of redraws
     // per second, where the update interval is determined by the constant
