@@ -3,7 +3,7 @@
  * Support for grouping of Renderables with custom pivot ability
  */
 
-/*jslint node: true, vars: true */
+/*jslint node: true, vars: true, nomen: true */
 /*global PivotedTransform, SquareRenderable, mat4  */
 /* find out more about jslint: http://www.jslint.com/help.html */
 

@@ -5,65 +5,75 @@
  * removing, transforming, and drawing of shapes.
  */
 
-/* global gEngine: false, SimpleShader: false, Renderable: false, mat4: false, vec3: false */
+/*jslint nomen: true, devel: true*/
+/*global gEngine: false, SimpleShader: false, SquareRenderable: false, Renderable: false, mat4: false, vec3: false */
 
 // Pseudo-enum to allow external calling code to request only shapes that we
 // support in the DrawManager.
 var PrimitiveShape = {};
 
 function DrawManager(canvasId) {
+    'use strict';
     console.log("Loading DrawManager");
-    var PublicInstance = {};
-    
+
     gEngine.Core.initializeWebGL(canvasId);
     gEngine.Core.clearCanvas([0.8, 0.8, 0.8, 1]);
-    
+
     console.log("Setting up DrawManager with id " + canvasId);
-    
+
+    var self = {},
     // I define local/instance variables and functions with an underscore.
     // More consistent and easier to read.
-    var _gl = gEngine.Core.getGL();
-    
-    var _squareShader = new SimpleShader(
-        "src/GLSLShaders/SimpleVS.glsl", // Path to the VertexShader 
-        "src/GLSLShaders/SimpleFS.glsl", // Path to the Simple FragmentShader
-        _gl.TRIANGLE_STRIP); // vertex buffer type
-    var _circleShader = new SimpleShader(
-        "src/GLSLShaders/SimpleVS.glsl", // Path to the VertexShader 
-        "src/GLSLShaders/SimpleFS.glsl", // Path to the Simple FragmentShader
-        _gl.TRIANGLE_FAN); // vertex buffer type
-    
-    var _renderedShapes = [];
-    var _shapeInfo = [];
-    var _selectedShape = null;
-    var _selectedShapeIndex = 0;
-    
-    PublicInstance.removeAllShapes = function () {
+        _gl = gEngine.Core.getGL(),
+
+        _squareShader = new SimpleShader(
+            "src/GLSLShaders/SimpleVS.glsl", // Path to the VertexShader 
+            "src/GLSLShaders/SimpleFS.glsl", // Path to the Simple FragmentShader
+            _gl.TRIANGLE_STRIP
+        ), // vertex buffer type
+        _circleShader = new SimpleShader(
+            "src/GLSLShaders/SimpleVS.glsl", // Path to the VertexShader 
+            "src/GLSLShaders/SimpleFS.glsl", // Path to the Simple FragmentShader
+            _gl.TRIANGLE_FAN
+        ), // vertex buffer type
+
+        _renderedShapes = [],
+        _sceneNodes = [],
+        _shapeInfo = [],
+        _selectedShape = null,
+        _selectedShapeIndex = 0;
+
+    self.removeAllShapes = function () {
         _renderedShapes = [];
         _selectedShape = null;
     };
-    
-    PublicInstance.drawShapes = function (camera) {
+
+    self.drawShapes = function (camera) {
+        var i = 0;
         camera.setupViewProjection();
-        
-        for (var shape in _renderedShapes) {
-            _renderedShapes[shape].draw(camera);
+
+        for (i in _renderedShapes) {
+            _renderedShapes[i].draw(camera);
+        }
+
+        for (i in _sceneNodes) {
+            _sceneNodes[i].draw(camera);
         }
     };
 
-    PublicInstance.getSupportedShapes = function () {
+    self.getSupportedShapes = function () {
         return PrimitiveShape;
     };
-    
-    PublicInstance.getRenderedShapeCount = function () {
+
+    self.getRenderedShapeCount = function () {
         return _renderedShapes.length;
     };
-    
-    PublicInstance.getRenderedShapeInfo = function () {
+
+    self.getRenderedShapeInfo = function () {
         return _shapeInfo;
     };
-    
-    PublicInstance.getShapeXform = function (index) {
+
+    self.getShapeXform = function (index) {
         // Bounds checking
         if (index < _renderedShapes.length) {
             return _renderedShapes[index].getXform();
@@ -71,16 +81,16 @@ function DrawManager(canvasId) {
             console.log("Tried to get shape out of bounds with index " + index);
         }
     };
-    
-    PublicInstance.getSquareShader = function () {
+
+    self.getSquareShader = function () {
         return _squareShader;
     };
-    
-    PublicInstance.getCircleShader = function () {
+
+    self.getCircleShader = function () {
         return _circleShader;
     };
-    
-    PublicInstance.selectShape = function (index) {
+
+    self.selectShape = function (index) {
         // Bounds checking
         if (index < _renderedShapes.length) {
             _selectedShape = _renderedShapes[index];
@@ -91,7 +101,7 @@ function DrawManager(canvasId) {
         }
     };
 
-    PublicInstance.addShapeToCanvas = function (shapeType) {
+    self.addShapeToCanvas = function (shapeType) {
         console.log("Adding shape to canvas of glArrayType " + shapeType);
         if (shapeType === PrimitiveShape.Circle.Value) {
             console.log("Creating a circle");
@@ -105,26 +115,26 @@ function DrawManager(canvasId) {
         _renderedShapes[_renderedShapes.length] = _selectedShape;
         //PublicInstance.drawShapes();
     };
-    
-    PublicInstance.removeShape = function (index) {
+
+    self.removeShape = function (index) {
         // Bounds checking
         if (index < _renderedShapes.length) {
             _renderedShapes[index] = null;
-            
+
             // If we remove from the middle of the array we need to shift down
             // all the other values
             _renderedShapes.splice(index, 1);
             // We should also remove it from our shape info collection
             _shapeInfo.splice(index, 1);
-            
+
             // "Erase" the removed shape
-            PublicInstance.drawShapes();
+            self.drawShapes();
         } else {
             console.log("Tried to remove shape out of bounds with index " + index);
         }
     };
-    
-    PublicInstance.scaleSelectedShape = function (x, y) {
+
+    self.scaleSelectedShape = function (x, y) {
         if (_selectedShape === null) {
             console.log("Cannot manipulate selected shape because no shape is selected.");
             return;
@@ -132,23 +142,23 @@ function DrawManager(canvasId) {
         _selectedShape.getXform().setSize(x, y);
         //PublicInstance.drawShapes();
     };
-    PublicInstance.rotateSelectedShapeInRad = function (rot) {
+    self.rotateSelectedShapeInRad = function (rot) {
         if (_selectedShape === null) {
             console.log("Cannot manipulate selected shape because no shape is selected.");
             return;
         }
         _selectedShape.getXform().setRotationInRad(rot);
-        PublicInstance.drawShapes();
+        self.drawShapes();
     };
-    PublicInstance.rotateSelectedShapeInDeg = function (rot) {
+    self.rotateSelectedShapeInDeg = function (rot) {
         if (_selectedShape === null) {
             console.log("Cannot manipulate selected shape because no shape is selected.");
             return;
         }
         _selectedShape.getXform().setRotationInDegree(rot);
-        PublicInstance.drawShapes();
+        self.drawShapes();
     };
-    PublicInstance.translateSelectedShape = function (x, y) {
+    self.translateSelectedShape = function (x, y) {
         if (_selectedShape === null) {
             console.log("Cannot manipulate selected shape because no shape is selected.");
             return;
@@ -157,7 +167,7 @@ function DrawManager(canvasId) {
         //updateShapeInfo(_selectedShapeIndex);
         //PublicInstance.drawShapes();
     };
-    PublicInstance.colorSelectedShape = function (color) {
+    self.colorSelectedShape = function (color) {
         if (_selectedShape === null) {
             console.log("Cannot manipulate selected shape because no shape is selected.");
             return;
@@ -166,44 +176,27 @@ function DrawManager(canvasId) {
         //updateShapeInfo(_selectedShapeIndex);
         //PublicInstance.drawShapes();
     };
-    
-    PublicInstance.getSelectedShapeXform = function () {
+
+    self.getSelectedShapeXform = function () {
         return _selectedShape.getXform() || null;
     };
-    
-    PublicInstance.getSelectedShapeColorInHex = function () {
+
+    self.getSelectedShapeColorInHex = function () {
         return _selectedShape.getColorInHex();
     };
-    
-    PublicInstance.getEraserXform = function () {
-        return _eraser.getXform();
-    };
-    
-    // parameter is optional
-    PublicInstance.toggleEraserMode = function (state) {
-        if (arguments.length > 0) {
-            _eraserMode = state;
-        } else {
-            _eraserMode = !_eraserMode;
-        }
-        
-        // post state switch
-        if (_eraserMode) {
-            PublicInstance.finalizeSelectedShape();
-        } else {
-            _eraser.getXform().setPosition(-1000, -1000);
-            PublicInstance.drawShapes();
-        }
-    };
-    
-    PublicInstance.isShapeSelected = function () {
+
+    self.isShapeSelected = function () {
         return _selectedShape !== null && _selectedShape !== undefined;
     };
-    
-    PublicInstance.finalizeSelectedShape = function () {
+
+    self.finalizeSelectedShape = function () {
         console.log("Finalizing selected shape");
         // Cut reference to selected shape
         _selectedShape = null;
+    };
+
+    self.addSceneNode = function (node) {
+        _sceneNodes.push(node);
     };
 
     PrimitiveShape = Object.freeze({
@@ -216,24 +209,12 @@ function DrawManager(canvasId) {
             Value : gEngine.Core.getGL().TRIANGLE_FAN
         }
     });
-    
+
     // Runs an update loop and returns how many, if any, shapes were removed
-    PublicInstance.update = function () {
-        var numRemoved = 0;
-        for (var i = 0; i < _renderedShapes.length; i++) {
-            _renderedShapes[i].getXform().incYPosBy(-1);
-            if (_renderedShapes[i].getXform().getYPos() < 0) {
-                PublicInstance.removeShape(i);
-                numRemoved++;
-                // since Array.splice will move all the elements after i up one
-                // element, we need to remain in the same position to avoid
-                // skipping any shapes
-                i--;
-            }
-        }
-        return numRemoved;
+    self.update = function () {
+        //TODO: Any update logic to do in the model?
     };
 
     console.log("DrawManager is ready");
-    return PublicInstance;
+    return self;
 }
