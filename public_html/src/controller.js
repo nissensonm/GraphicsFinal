@@ -25,9 +25,9 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     // Potentially saves on canvas redraws by limiting the number of redraws
     // per second, where the update interval is determined by the constant
     // number FPS_GOAL (i.e. the number of times per second to update, ideally)
-    var redrawUpdateTimer,
+    var redrawUpdateTimer, // Will hold a promise to an $interval() function
         drawMgr = new DrawManager("GLCanvas"),
-        requestCanvasDraw = false,
+        requestCanvasDraw = false, // This flag decides whether or not we trigger a canvas redraw in the update loop
         dragging = "",
         wcMPos = [0, 0],
         mainView = new Camera(
@@ -43,19 +43,21 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.fpsGoal = 120;
 
-    // Fired by redrawUpdateTimer
+    // Fired by redrawUpdateTimer. Controller-side update logic goes here.
     function update() {
         if (requestCanvasDraw) {
-            requestCanvasDraw = false;
+            requestCanvasDraw = false; // Reset the flag
             drawMgr.drawShapes(mainView);
         }
     }
 
+    // Utility to round 'num' to 'decimals' places
     function round(num, decimals) {
         var shift = Math.pow(10, decimals);
         return Math.round(num * shift) / shift;
     }
 
+    // These utilities convert device coordinates (px) to WC
     function dcToWc(canvasSize, dc, camera) {
         return [dc[0] / canvasSize[0] * camera.getWCWidth(), dc[1] / canvasSize[1] * camera.getWCHeight()];
     }
@@ -90,6 +92,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     $scope.onClientMouseMove = function ($event) {
         // Update mouse position data
         var cam = mainView;
+        // TODO: What of these do we need to keep?
         $scope.targetCam = "Main";
         $scope.clientX = $event.pageX;
         $scope.clientY = $event.pageY;
