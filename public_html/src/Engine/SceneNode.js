@@ -66,7 +66,7 @@ SceneNode.prototype.draw = function (cam, parentMat) {
     var i;
     var xfMat = this._xform.getXform();
     if (parentMat !== undefined)
-        mat4._ultiply(xfMat, parentMat, xfMat);
+        mat4.multiply(xfMat, parentMat, xfMat);
     
     // Draw our own!
     for (i = 0; i < this._set.length; i++) {
