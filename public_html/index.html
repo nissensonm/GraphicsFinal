@@ -75,6 +75,11 @@ and open the template in the editor.
                                     <input type="number" min="-200" max="200" ng-model="wcPosY" ng-change="onViewGuiChange('wcy')" string-to-number>
                                 </td>
                             </tr>
+                            <tr>
+                                <td>
+                                    Collision: {{collision || "No collision"}}
+                                </td>
+                            </tr>
                         </table>
                     </td>
                     <td>

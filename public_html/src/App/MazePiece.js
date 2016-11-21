@@ -12,30 +12,30 @@ function MazePiece(shader, name, xPivot, yPivot) {
 
     var piece = new SquareRenderable(shader);
     this.addToSet(piece);
-    piece.setColor([1, 0, 0, 1]);
+    piece.setColor([1, 0, 0, 1]); // red
     xf = piece.getXform();
-    xf.setSize(0.25, 1);
+    xf.setSize(0.5, 2);
     xf.setPosition(xPivot, yPivot + 0.5);
 
     piece = new SquareRenderable(shader);
     this.addToSet(piece);
-    piece.setColor([1, 0.5, 0, 1]);
+    piece.setColor([1, 0.5, 0, 1]); // orange
     xf = piece.getXform();
-    xf.setSize(1, 0.25);
+    xf.setSize(2.5, 0.5);
     xf.setPosition(xPivot + 0.5, yPivot + 1);
 
     piece = new SquareRenderable(shader);
     this.addToSet(piece);
-    piece.setColor([1, 1, 0, 1]);
+    piece.setColor([1, 1, 0, 1]); // yellow
     xf = piece.getXform();
-    xf.setSize(0.25, 1);
+    xf.setSize(0.5, 2);
     xf.setPosition(xPivot + 1, yPivot + 1.5);
 
     piece = new SquareRenderable(shader);
     this.addToSet(piece);
-    piece.setColor([0.5, 1, 0, 1]);
+    piece.setColor([0.5, 1, 0, 1]); // yellow-green
     xf = piece.getXform();
-    xf.setSize(1, 0.25);
+    xf.setSize(2, 0.5);
     xf.setPosition(xPivot + 0.5, yPivot);
 }
 gEngine.Core.inheritPrototype(MazePiece, SceneNode);

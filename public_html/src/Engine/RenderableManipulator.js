@@ -11,11 +11,11 @@ function RenderableManipulator(parent, shader) {
     'use strict';
     var self = {},
         _parent = parent,
-        _xform = new Transform(),
-        _moveHandle = new SquareRenderable(shader),
-        _rotateHandle = new SquareRenderable(shader),
+        _xform = new Transform(),                     // Handle locations:
+        _moveHandle = new SquareRenderable(shader),   // center
+        _rotateHandle = new SquareRenderable(shader), // top
         _rotateLine = new SquareRenderable(shader),
-        _scaleHandle = new SquareRenderable(shader),
+        _scaleHandle = new SquareRenderable(shader),  // right
         _scaleLine = new SquareRenderable(shader);
 
     self.draw = function (camera) {
@@ -29,7 +29,7 @@ function RenderableManipulator(parent, shader) {
         _scaleHandle.draw(camera, parentMat);
         _scaleLine.draw(camera, parentMat);
     };
-
+    
     self.setParent = function (newParent) {
         _parent = newParent;
         updatePos();
