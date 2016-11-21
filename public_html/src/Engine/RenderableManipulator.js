@@ -18,15 +18,11 @@ function RenderableManipulator(parent, shader) {
         _scaleHandle = new SquareRenderable(shader),
         _scaleLine = new SquareRenderable(shader);
 
-    updatePos() {
-        
-    }
-
     self.draw = function (camera) {
         var parentMat = _parent.getXform().getXform();
         // Transform pivot point by parent transform
         mat4.multiply(parentMat, _xform.getXform(), parentMat);
-        
+
         _moveHandle.draw(camera, parentMat);
         _rotateHandle.draw(camera, parentMat);
         _rotateLine.draw(camera, parentMat);
@@ -38,15 +34,15 @@ function RenderableManipulator(parent, shader) {
         _parent = newParent;
         updatePos();
     };
-    
+
     self.scaleParent = function (x, y) {
         _xform.setSize(x, y);
     };
-    
+
     self.moveParent = function (x, y) {
         _xform.setPosition(x, y);
     };
-    
+
     self.rotateParent = function (rad) {
         _xform.setRotationInRad(rad);
     };
