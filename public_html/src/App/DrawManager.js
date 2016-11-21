@@ -5,47 +5,51 @@
  * removing, transforming, and drawing of shapes.
  */
 
-/* global gEngine: false, SimpleShader: false, Renderable: false, mat4: false, vec3: false */
+/*jslint nomen: true, devel: true*/
+/*global gEngine: false, SimpleShader: false, Renderable: false, mat4: false, vec3: false */
 
 // Pseudo-enum to allow external calling code to request only shapes that we
 // support in the DrawManager.
 var PrimitiveShape = {};
 
 function DrawManager(canvasId) {
+    'use strict';
     console.log("Loading DrawManager");
-    var PublicInstance = {};
-    
+
     gEngine.Core.initializeWebGL(canvasId);
     gEngine.Core.clearCanvas([0.8, 0.8, 0.8, 1]);
-    
+
     console.log("Setting up DrawManager with id " + canvasId);
-    
+
+    var PublicInstance = {},
     // I define local/instance variables and functions with an underscore.
     // More consistent and easier to read.
-    var _gl = gEngine.Core.getGL();
-    
-    var _squareShader = new SimpleShader(
-        "src/GLSLShaders/SimpleVS.glsl", // Path to the VertexShader 
-        "src/GLSLShaders/SimpleFS.glsl", // Path to the Simple FragmentShader
-        _gl.TRIANGLE_STRIP); // vertex buffer type
-    var _circleShader = new SimpleShader(
-        "src/GLSLShaders/SimpleVS.glsl", // Path to the VertexShader 
-        "src/GLSLShaders/SimpleFS.glsl", // Path to the Simple FragmentShader
-        _gl.TRIANGLE_FAN); // vertex buffer type
-    
-    var _renderedShapes = [];
-    var _shapeInfo = [];
-    var _selectedShape = null;
-    var _selectedShapeIndex = 0;
-    
+        _gl = gEngine.Core.getGL(),
+
+        _squareShader = new SimpleShader(
+            "src/GLSLShaders/SimpleVS.glsl", // Path to the VertexShader 
+            "src/GLSLShaders/SimpleFS.glsl", // Path to the Simple FragmentShader
+            _gl.TRIANGLE_STRIP
+        ), // vertex buffer type
+        _circleShader = new SimpleShader(
+            "src/GLSLShaders/SimpleVS.glsl", // Path to the VertexShader 
+            "src/GLSLShaders/SimpleFS.glsl", // Path to the Simple FragmentShader
+            _gl.TRIANGLE_FAN
+        ), // vertex buffer type
+
+        _renderedShapes = [],
+        _shapeInfo = [],
+        _selectedShape = null,
+        _selectedShapeIndex = 0;
+
     PublicInstance.removeAllShapes = function () {
         _renderedShapes = [];
         _selectedShape = null;
     };
-    
+
     PublicInstance.drawShapes = function (camera) {
         camera.setupViewProjection();
-        
+
         for (var shape in _renderedShapes) {
             _renderedShapes[shape].draw(camera);
         }
@@ -166,40 +170,19 @@ function DrawManager(canvasId) {
         //updateShapeInfo(_selectedShapeIndex);
         //PublicInstance.drawShapes();
     };
-    
+
     PublicInstance.getSelectedShapeXform = function () {
         return _selectedShape.getXform() || null;
     };
-    
+
     PublicInstance.getSelectedShapeColorInHex = function () {
         return _selectedShape.getColorInHex();
     };
-    
-    PublicInstance.getEraserXform = function () {
-        return _eraser.getXform();
-    };
-    
-    // parameter is optional
-    PublicInstance.toggleEraserMode = function (state) {
-        if (arguments.length > 0) {
-            _eraserMode = state;
-        } else {
-            _eraserMode = !_eraserMode;
-        }
-        
-        // post state switch
-        if (_eraserMode) {
-            PublicInstance.finalizeSelectedShape();
-        } else {
-            _eraser.getXform().setPosition(-1000, -1000);
-            PublicInstance.drawShapes();
-        }
-    };
-    
+
     PublicInstance.isShapeSelected = function () {
         return _selectedShape !== null && _selectedShape !== undefined;
     };
-    
+
     PublicInstance.finalizeSelectedShape = function () {
         console.log("Finalizing selected shape");
         // Cut reference to selected shape
@@ -216,7 +199,7 @@ function DrawManager(canvasId) {
             Value : gEngine.Core.getGL().TRIANGLE_FAN
         }
     });
-    
+
     // Runs an update loop and returns how many, if any, shapes were removed
     PublicInstance.update = function () {
         var numRemoved = 0;

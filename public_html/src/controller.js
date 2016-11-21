@@ -29,7 +29,12 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         drawMgr = new DrawManager("GLCanvas"),
         requestCanvasDraw = false,
         dragging = "",
-        wcMPos = [0, 0];
+        wcMPos = [0, 0],
+        mainView = new Camera(
+            [0, 0], // wc Center
+            200, // wc Wdith
+            [0, 0, $scope.CANVAS_SIZE[0], $scope.CANVAS_SIZE[1]]   // viewport: left, bottom, width, height
+        );
 
     $scope.drawMgr = drawMgr;
     $scope.canvasMouse = new CanvasMouseSupport('GLCanvas');
@@ -38,11 +43,28 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.fpsGoal = 120;
 
-    var mainView = new Camera(
-            [0, 0], // wc Center
-            200, // wc Wdith
-            [0, 0, $scope.CANVAS_SIZE[0], $scope.CANVAS_SIZE[1]]   // viewport: left, bottom, width, height
-        );
+    // Fired by redrawUpdateTimer
+    function update() {
+        if (requestCanvasDraw) {
+            requestCanvasDraw = false;
+            drawMgr.drawShapes(mainView);
+        }
+    }
+
+    function round(num, decimals) {
+        var shift = Math.pow(10, decimals);
+        return Math.round(num * shift) / shift;
+    }
+
+    function dcToWc(canvasSize, dc, camera) {
+        return [dc[0] / canvasSize[0] * camera.getWCWidth(), dc[1] / canvasSize[1] * camera.getWCHeight()];
+    }
+    function dcXToWcX(canvasWidth, dc, camera) {
+        return dc / canvasWidth * camera.getWCWidth();
+    }
+    function dcYToWcY(canvasHeight, dc, camera) {
+        return dc / canvasHeight * camera.getWCHeight();
+    }
 
     // Handle client mouse clicks and send to model
     $scope.onClientMouseClick = function ($event) {
@@ -59,7 +81,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.onClientMouseUp = function () {
         if (dragging === "") {
-            
+
         } else {
             dragging = "";
         }
@@ -84,32 +106,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             break;
         }
     };
-
-    // Fired by redrawUpdateTimer
-    function update() {
-        if (requestCanvasDraw) {
-            requestCanvasDraw = false;
-            drawMgr.drawShapes(mainView);
-            drawMgr.drawShapes(miniMap);
-            sqAreaViewport.draw(mainView);
-            sqAreaCanvas.draw(mainView);
-        }
-    }
-
-    function round(num, decimals) {
-        var shift = Math.pow(10, decimals);
-        return Math.round(num * shift) / shift;
-    }
-
-    function dcToWc(canvasSize, dc, camera) {
-        return [dc[0] / canvasSize[0] * camera.getWCWidth(), dc[1] / canvasSize[1] * camera.getWCHeight()];
-    }
-    function dcXToWcX(canvasWidth, dc, camera) {
-        return dc / canvasWidth * camera.getWCWidth();
-    }
-    function dcYToWcY(canvasHeight, dc, camera) {
-        return dc / canvasHeight * camera.getWCHeight();
-    }
 
     // Make sure canvas mouse position calculations are accurate after scrolling
     $(document).scroll(function () {
