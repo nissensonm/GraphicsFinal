@@ -23,29 +23,70 @@ function RenderableManipulator(parent, shader) {
         // Transform pivot point by parent transform
         mat4.multiply(parentMat, _xform.getXform(), parentMat);
 
+        _rotateLine.draw(camera, parentMat);
+        _scaleLine.draw(camera, parentMat);
+        // Draw handles on top of connecting lines
         _moveHandle.draw(camera, parentMat);
         _rotateHandle.draw(camera, parentMat);
-        _rotateLine.draw(camera, parentMat);
         _scaleHandle.draw(camera, parentMat);
-        _scaleLine.draw(camera, parentMat);
     };
     
     self.setParent = function (newParent) {
         _parent = newParent;
-        updatePos();
+        // Update manipulator xform to match the parent xform
+        var pxf = _parent.getXform();
+        
+        // If the parent xform is a PivotedTransform, use the pivot as the position
+        if (pxf.getPivot !== undefined) {
+            var pivot = pxf.getPivot();
+            _xform.setPosition(pivot[0], pivot[1]);
+        }    
+        _xform.setSize(pxf.getWidth(), pxf.getHeight());
+        _xform.setRotationInRad(pxf.getRotationInRad());
     };
 
     self.scaleParent = function (x, y) {
         _xform.setSize(x, y);
+        _parent.getXform().setSize(x, y);
     };
 
     self.moveParent = function (x, y) {
         _xform.setPosition(x, y);
+        _parent.getXform().setPosition(x, y);
     };
 
     self.rotateParent = function (rad) {
         _xform.setRotationInRad(rad);
+        _parent.getXform().setRotationInRad(rad);
     };
+    
+    // Top
+    _rotateHandle.setColor([0, 0.9, 0, 1]);
+    var xf = _rotateHandle.getXform();
+    xf.setSize(0.75, 0.75);
+    xf.setPosition(0, 1.5);
+    
+    _rotateLine.setColor([0, 0, 0, 1]);
+    xf = _rotateLine.getXform();
+    xf.setSize(0.125, 3);
+    xf.setPosition(0, 0.75);
+    
+    // Right
+    _scaleHandle.setColor([0, 0, 0.9, 1]);
+    xf = _scaleHandle.getXform();
+    xf.setSize(0.75, 0.75);
+    xf.setPosition(1.5, 0);
+    
+    _scaleLine.setColor([0, 0, 0, 1]);
+    xf = _scaleLine.getXform();
+    xf.setSize(3, 0.125);
+    xf.setPosition(0.75, 0);
+    
+    // Center
+    _moveHandle.setColor([0.9, 0, 0, 1]);
+    xf = _moveHandle.getXform();
+    xf.setSize(0.75, 0.75);
+    xf.setPosition(0, 0);
 
     return self;
 }
