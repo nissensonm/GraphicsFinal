@@ -215,6 +215,75 @@ function DrawManager(canvasId) {
         //TODO: Any update logic to do in the model?
     };
 
+    // This checks collision based on the xPos and yPos passed in.
+    // Collision is checked against ALL Scene Nodes, their children, and their 
+    // associated renderable objects. 
+    self.checkCollision = function(xPos, yPos) {
+        var i = 0;
+        var x = 0;
+        var foundCollision = 0;
+        
+        // First check all renderables of of top-level parent scene nodes.
+        // Done outside of recursion to make logic easier.
+        for (x in _sceneNodes){
+            for (i = 0; i < _sceneNodes[x].length; i++ ){
+                var currRenderable = _sceneNodes[x].getRenderableAt(i);
+                var wall = currRenderable.getXform();
+                if(wall.Contains([xPos, yPos])){
+                    //return _sceneNodes[x];
+                    var sceneAndObject = { sceneNode: _sceneNodes[x], renderableObj: currRenderable };
+                    return sceneAndObject;
+                }
+            }
+        }
+        
+        i = 0;
+        // Now recursively check all children of scene nodes.
+        for (i in _sceneNodes) {
+             foundCollision = self.recursiveCheckCollision(xPos, yPos, _sceneNodes[i]);
+            // If a value that is not 0 is returned, then some sort of collision was found.  
+            // Pass the sceneNode back up.
+            if (foundCollision !== 0){
+                return foundCollision;
+            }
+        }
+        // If nothing was found, return 0.
+        return 0;
+    };
+    
+    // Helper function, recusively checks all scene nodes and their renderable object.
+    // Returns of 0 means nothing was found. 
+    // Return sceneNode returns the corresponding sceneNode.
+    self.recursiveCheckCollision = function(xPos, yPos, currSceneNode) {
+        var i, foundCollision;
+        foundCollision = 0;
+       
+       // Check all children of the parent scene node. 
+        for (i = 0; i < currSceneNode.sizeChildren(); i++){
+            foundCollision = self.recursiveCheckCollision(xPos, yPos, currSceneNode.getChildAt(i));
+            // If foundCollision is no longer 0, then a collision was found. 
+            // Stop comparing and return it back up through the stack frames.
+            if (foundCollision !== 0){
+                return foundCollision;
+            }
+        }
+        
+        // Check all renderable objects inside passed in scene node for collision.
+        for (i = 0; i < currSceneNode.size(); i++ ){
+            var currRenderable = currSceneNode.getRenderableAt(i);
+            var wall = currRenderable.getXform();
+            // If collision detected, return scene node. 
+            if(wall.Contains([xPos, yPos])){
+                // return currentSceneNode if collision was found. 
+                var sceneAndObject = { sceneNode: currSceneNode, wallObject: currRenderable };
+                return sceneAndObject;
+            }
+        }
+
+        // Return 0 to indicate no collision detected.
+        return 0;
+    };
+
     console.log("DrawManager is ready");
     return self;
 }
