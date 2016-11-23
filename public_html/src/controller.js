@@ -75,6 +75,9 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         switch ($event.which) {
         case 1: // handle LMB
             requestCanvasDraw = true;
+            drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)), 
+            mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)));
+           
             break;
         case 3: // handle RMB
             break;

@@ -215,6 +215,52 @@ function DrawManager(canvasId) {
         //TODO: Any update logic to do in the model?
     };
 
+    self.checkCollision = function(xPos, yPos) {
+        var i = 0;
+        console.log("In Method, clicked at position: (" + xPos + ", " + yPos + ")");
+        
+        for (i in _renderedShapes) {
+             console.log(xPos + " OBJECT " + yPos);
+        }
+
+        for (i in _sceneNodes) {
+             console.log("SIZE: " + _sceneNodes[i].size());
+             self.recursiveCheckCollision(xPos, yPos, _sceneNodes[i].getChildAt(i));
+        }
+      
+    };
+    var numRecurse = 0;
+    self.recursiveCheckCollision = function(xPos, yPos, currSceneNode) {
+        var i;
+        numRecurse += 1;
+       // console.log("Recursive Check ! " + numRecurse);
+        
+
+        for (i = 0; i < currSceneNode.sizeChildren(); i++){
+          //  console.log("Children recurse! ");
+            self.recursiveCheckCollision(xPos, yPos, currSceneNode.getChildAt(i));
+        }
+        
+        for (i = 0; i < currSceneNode.size(); i++ ){
+           // console.log("Renderable recurse! x / y: " + xPos + ", " + yPos);
+            var currRenderable = currSceneNode.getRenderableAt(i);
+            var wall = currRenderable.getXform();
+            if(wall.Contains([xPos, yPos])){
+                console.log("Collision!");
+            }
+        }
+        /*  if (!isScene){
+            
+            wall = currSceneNode.getXform();
+            if(wall.Contains([xPos, yPos])){
+                console.log("Collision!");
+            }
+        }*/
+  
+      
+        
+    };
+
     console.log("DrawManager is ready");
     return self;
 }
