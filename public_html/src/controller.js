@@ -77,17 +77,16 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         case 1: // handle LMB
             requestCanvasDraw = true;
             // Returns a non-0 value if a collision occured with the mouse.
-            var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)), 
-                mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)));
+            var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)) + 0.3, 
+                mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)) + 0.4);
 
             // If collisionSceneNode !== 0, then the scene node was returned.
             // If it is 0 then no collision occured.
             if (collisionSceneNode !== 0)
             {
-                var sceneXForm = collisionSceneNode.sceneNode.getXform();
-                var wallXForm = collisionSceneNode.wallObject.getXform();
-                // wallXForm.incYPosBy(0.1);
-                // Do something with the returned XForm or object
+                // Do something with the returned XForm or object: 
+                // var sceneXForm = collisionSceneNode.sceneNode.getXform();
+                // var wallXForm = collisionSceneNode.wallObject.getXform();
             }
 
             break;
