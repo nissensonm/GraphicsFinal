@@ -22,6 +22,13 @@ module.directive('stringToNumber', function () {
 
 module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $interval) {
     'use strict';
+    
+    $scope.canvasMouse = new CanvasMouseSupport('GLCanvas');
+    $scope.CANVAS_SIZE = [800, 600];
+    $scope.fpsGoal = 120;
+    
+    $scope.collision = undefined;
+
     // Potentially saves on canvas redraws by limiting the number of redraws
     // per second, where the update interval is determined by the constant
     // number FPS_GOAL (i.e. the number of times per second to update, ideally)
@@ -30,24 +37,25 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         requestCanvasDraw = false, // This flag decides whether or not we trigger a canvas redraw in the update loop
         dragging = "",
         wcMPos = [0, 0],
+        clientX = 0,
+        clientY = 0,
+        canvasX = 0,
+        canvasY = 0,
+        manipulator = new RenderableManipulator(undefined, drawMgr.getSquareShader()),
         mainView = new Camera(
             [0, 0], // wc Center
-            200, // wc Wdith
+            15, // wc Wdith
             [0, 0, $scope.CANVAS_SIZE[0], $scope.CANVAS_SIZE[1]]   // viewport: left, bottom, width, height
         );
 
     $scope.drawMgr = drawMgr;
-    $scope.canvasMouse = new CanvasMouseSupport('GLCanvas');
-
-    $scope.CANVAS_SIZE = [800, 600];
-
-    $scope.fpsGoal = 120;
 
     // Fired by redrawUpdateTimer. Controller-side update logic goes here.
     function update() {
         if (requestCanvasDraw) {
             requestCanvasDraw = false; // Reset the flag
             drawMgr.drawShapes(mainView);
+            manipulator.draw(mainView);
         }
     }
 
@@ -91,15 +99,11 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.onClientMouseMove = function ($event) {
         // Update mouse position data
-        var cam = mainView;
         // TODO: What of these do we need to keep?
-        $scope.targetCam = "Main";
-        $scope.clientX = $event.pageX;
-        $scope.clientY = $event.pageY;
-        $scope.canvasX = $scope.canvasMouse.getPixelXPos($event);
-        $scope.canvasY = $scope.canvasMouse.getPixelYPos($event);
-        $scope.camX = round(cam.mouseWCX($scope.canvasX), 3);
-        $scope.camY = round(cam.mouseWCY($scope.canvasY), 3);
+        clientX = $event.pageX;
+        clientY = $event.pageY;
+        canvasX = $scope.canvasMouse.getPixelXPos($event);
+        canvasY = $scope.canvasMouse.getPixelYPos($event);
         wcMPos = [mainView.mouseWCX($scope.canvasX), mainView.mouseWCY($scope.canvasY)];
 
         // Now process the actual input
@@ -124,4 +128,15 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     setTimeout(function () {
         $scope.canvasMouse.refreshBounds();
     }, 500);
+    
+    // Set up hierarchy
+    var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 0, -5);
+    drawMgr.addSceneNode(piece);
+    var kid = new MazePiece(drawMgr.getSquareShader(), "firstGen", 1, -3);
+    piece.addAsChild(kid);
+    var grandkid = new MazePiece(drawMgr.getSquareShader(), "secondGen", 2, -4);
+    kid.addAsChild(grandkid);
+    manipulator.setParent(piece);
+    requestCanvasDraw = true;
+    
 }]);

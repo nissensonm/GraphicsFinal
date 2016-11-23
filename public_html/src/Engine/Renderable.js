@@ -5,7 +5,7 @@
  * other attributes later) to represent a Renderable object on the game screen.
  */
 /*jslint node: true, vars: true */
-/*global gEngine: false, Transform: false */
+/*global gEngine: false, Transform, mat4: false */
 /* find out more about jslint: http://www.jslint.com/help.html */
 
 // Constructor and object definition
@@ -24,6 +24,12 @@ Renderable.prototype.update = function () {};
 // Public methods
 //**-----------------------------------------
 Renderable.prototype.draw = function (camera) {};
+Renderable.prototype.computeAndLoadModelXform = function (parentMat) {
+    var m = this.mXform.getXform();
+    if (parentMat !== undefined)
+        mat4.multiply(m, parentMat, m);
+    this.mShader.loadObjectTransform(m);
+};
 
 Renderable.prototype.getXform = function () { return this.mXform; };
 Renderable.prototype.setColor = function (color) { this.mColor = color; };

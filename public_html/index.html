@@ -25,6 +25,7 @@ and open the template in the editor.
         <script type="text/javascript" src="src/Engine/Camera.js"></script>
         <script type="text/javascript" src="src/Engine/Camera_Mouse.js"></script>
         <script type="text/javascript" src="src/Engine/Renderable.js"></script>
+        <script type="text/javascript" src="src/Engine/RenderableManipulator.js"></script>
         <script type="text/javascript" src="src/Engine/SquareRenderable.js"></script>
         <script type="text/javascript" src="src/Engine/SimpleShader.js"></script>
         <script type="text/javascript" src="src/Engine/Transform.js"></script>
@@ -73,6 +74,11 @@ and open the template in the editor.
                                 <td>
                                     <input type="range" min="-200" max="200" ng-model="wcPosY" ng-change="onViewGuiChange('wcy')">
                                     <input type="number" min="-200" max="200" ng-model="wcPosY" ng-change="onViewGuiChange('wcy')" string-to-number>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Collision: {{collision || "No collision"}}
                                 </td>
                             </tr>
                         </table>
