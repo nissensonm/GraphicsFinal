@@ -55,11 +55,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         if (requestCanvasDraw) {
             requestCanvasDraw = false; // Reset the flag
             drawMgr.drawShapes(mainView);
-<<<<<<< HEAD
-            
-=======
             manipulator.draw(mainView);
->>>>>>> refs/remotes/origin/master
         }
     }
 
