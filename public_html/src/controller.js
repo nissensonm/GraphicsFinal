@@ -1,6 +1,6 @@
 /*global DrawManager: false, CollisionHelper: false, CanvasMouseSupport: false, Camera: false, setTimeout: false*/
-/*global document, $, angular, console, alert*/
-/* jslint node: true, vars: true */
+/*global document, $, angular, console, alert, RenderableManipulator*/
+/* jslint node: true, vars: true, nomen: true */
 
 var module = angular.module('mp5', []);
 
@@ -22,13 +22,13 @@ module.directive('stringToNumber', function () {
 
 module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $interval) {
     'use strict';
-    
+
     $scope.canvasMouse = new CanvasMouseSupport('GLCanvas');
     $scope.CANVAS_SIZE = [800, 600];
     $scope.fpsGoal = 120;
-    
+
     $scope.collision = undefined;
-    
+
     $scope.rotationSnap = false;
 
     // Potentially saves on canvas redraws by limiting the number of redraws
@@ -41,10 +41,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         dragStart = [0, 0],
         dragTargetXform,
         wcMPos = [0, 0],
-        clientX = 0,
-        clientY = 0,
-        canvasX = 0,
-        canvasY = 0,
         manipulator = new RenderableManipulator(undefined, "manipulator", drawMgr.getSquareShader()),
         mainView = new Camera(
             [0, 0], // wc Center
@@ -89,21 +85,19 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             dragStart[1] = mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event));
             requestCanvasDraw = true;
             // Returns a non-0 value if a collision occured with the mouse.            
-            var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)) + 0.3, 
+            var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)) + 0.3,
                 mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)) + 0.4, manipulator);
 
             // If collisionSceneNode !== 0, then the scene node was returned.
             // If it is 0 then no collision occured.
-            if (collisionSceneNode !== 0)
-            {
+            if (collisionSceneNode !== 0) {
                 // Do something with the returned XForm or object: 
                 // var sceneXForm = collisionSceneNode.sceneNode.getXform();
                 // var wallXForm = collisionSceneNode.wallObject.getXform();
-                // TODO: Need to be able to check collision on manipulator as well
                 if (collisionSceneNode.sceneNode.getName() === "manipulator") {
                     dragging = collisionSceneNode.handleType;
                     dragTargetXform = collisionSceneNode.sceneNode.getXform();
-                    
+
 //                    console.log("wcMPos: " + wcMPos.toString() +
 //                            ";\n dragXformPos: " + dragTargetXform.getPosition().toString() +
 //                            ";\n pivot: " + dragTargetXform.getPivot().toString());
@@ -123,41 +117,42 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     };
 
     $scope.onClientMouseUp = function () {
-        // If not dragging anything
-        if (dragging === undefined) {
-
-        } else { // Something was being dragged
+        // Something was being dragged
+        if (dragging !== undefined) {
             dragging = undefined;
-        }
+        } //else { // Something was being dragged
+        //}
     };
 
     $scope.onClientMouseMove = function ($event) {
         // Update mouse position data
-        // TODO: What of these do we need to keep?
         clientX = $event.pageX;
         clientY = $event.pageY;
-   //     canvasX = $scope.canvasMouse.getPixelXPos($event);
-   //     canvasY = $scope.canvasMouse.getPixelYPos($event);
         wcMPos = [mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)), mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event))];
 
         // Now process the actual input
         switch ($event.which) {
         case 1: // left
-            var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]];
+            var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
+                pivot =  dragTargetXform.getPivot();
             // console.log(wcMPos[0] + " " + dragStart[0] + " " + wcMPos[1] + " " + dragStart[1] +" " + canvasX);
             if (dragging === "Scale") {
                 manipulator.scaleParent(mDelta[0], mDelta[1]);
             } else if (dragging === "Move") {
-                var pivot = dragTargetXform.getPivot();
+                // Movement is relative to the pivot, but the translation won't be the same WC position...
                 manipulator.moveParent(wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]);
             } else if (dragging === "Rotate") {
-                var center = dragTargetXform.getPivot(),
-                    fromCenter = [wcMPos[0] - center[0], wcMPos[1] - center[1]],
+                // pivot is the point to rotate about
+                // calculate distance in x and y from the pivot point
+                var fromCenter = [wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]],
+                    // Compute the angle of the triangle made from the two sides on the last line
                     angle = Math.atan(fromCenter[1] / fromCenter[0]) - Math.PI; // sin / cos
 
                 // Domain of arctan is ( -PI/2, PI/2 ), only half of a circle...
-                if (fromCenter[0] >= 0) angle -= Math.PI;
-                
+                if (fromCenter[0] >= 0) {
+                    angle -= Math.PI;
+                }
+
                 // Fix angle offset
                 angle -= Math.PI / 2;
 
@@ -166,7 +161,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                     var snap = parseInt($scope.rotationSnap) * Math.PI / 180;
                     angle = Math.round(angle / snap) * snap; // round to nearest 90 degree angle, in radians
                 }
-                manipulator.rotateParent( angle);
+                manipulator.rotateParent(angle);
             }
             requestCanvasDraw = true;
             break;
@@ -183,7 +178,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     setTimeout(function () {
         $scope.canvasMouse.refreshBounds();
     }, 500);
-    
+
     // Set up hierarchy
     var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 0, -5);
     drawMgr.addSceneNode(piece);
@@ -193,7 +188,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     kid.addAsChild(grandkid);
     manipulator.setParent(piece);
     requestCanvasDraw = true;
-    
+
     // Kick off update loop with initial FPS goal
     redrawUpdateTimer = $interval(update, 1000 / $scope.fpsGoal);
     requestCanvasDraw = true;
