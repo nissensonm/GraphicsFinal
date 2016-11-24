@@ -85,8 +85,9 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             dragStart[1] = mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event));
             requestCanvasDraw = true;
             // Returns a non-0 value if a collision occured with the mouse.            
-            var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)) + 0.3,
-                mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)) + 0.4, manipulator);
+            var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)),
+                mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)), manipulator);
+
 
             // If collisionSceneNode !== 0, then the scene node was returned.
             // If it is 0 then no collision occured.
@@ -126,13 +127,14 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.onClientMouseMove = function ($event) {
         // Update mouse position data
-        clientX = $event.pageX;
-        clientY = $event.pageY;
+       // clientX = $event.pageX;
+        // clientY = $event.pageY;
         wcMPos = [mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)), mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event))];
 
         // Now process the actual input
         switch ($event.which) {
         case 1: // left
+            try {
             var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
                 pivot =  dragTargetXform.getPivot();
             // console.log(wcMPos[0] + " " + dragStart[0] + " " + wcMPos[1] + " " + dragStart[1] +" " + canvasX);
@@ -165,6 +167,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             }
             requestCanvasDraw = true;
             break;
+        }
+            catch(err) {}
         }
     };
 

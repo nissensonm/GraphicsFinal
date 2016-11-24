@@ -217,31 +217,56 @@ function DrawManager(canvasId) {
 
     // Checks the manipulator object for collisions.
     self.checkManipulatorCollision = function(xPos, yPos, manipulator){
+        try {
         var manipulatorXforms = manipulator.getPositions();
-        var wcXform = manipulatorXforms.wcXform; 
+
+
+       // var pivotTest = manipulator.getXform();
+       // var pivot = pivotTest.getPivot();
         
-        // Check move manipulator position.
-        if (CollisionHelper.WithinRadius([wcXform.getXPos(), wcXform.getYPos()],  
-                                        0.5, [xPos, yPos])) {
+        // Calculate the collision boundaries for move handle.
+        var moveHandleMat = manipulatorXforms.moveHandle.getXform().getXform();
+        
+        var xFormWithPiv = manipulatorXforms.wcXform.getXform();
+        
+        
+        var parentMat = manipulator.getXform().getXform();
+        mat4.multiply(moveHandleMat, parentMat, moveHandleMat);
+        mat4.multiply(moveHandleMat, xFormWithPiv, moveHandleMat);
+
+       // console.log( "Pivot: " + pivot[0] + " " + pivot[1]);
+
+       // console.log("Clicked Position: " + xPos + ", " + yPos);
+
+      //  var i = 0;
+        //for (i in moveHandleMat){
+       //     console.log(i + " " + moveHandleMat[i]);
+      //  }
+        
+        
+        if (CollisionHelper.WithinRadius([moveHandleMat[12], moveHandleMat[13]],  
+                                         0.40, [xPos, yPos])) {
             return { sceneNode: manipulator, handleType: "Move" };
         }
         
-        // Check rotate handle position.
-        var rotateHandleXform = manipulatorXforms.rotateHandle.getXform();
-        if (CollisionHelper.WithinRadius([wcXform.getXPos() + rotateHandleXform.getXPos(), 
-                                        wcXform.getYPos() + rotateHandleXform.getYPos()],  
-                                        0.5, [xPos, yPos])) {
+        // Calculate the collision boundaries for rotation handle.
+        var rotateHandleMat = manipulatorXforms.rotateHandle.getXform().getXform();
+        mat4.multiply(rotateHandleMat, parentMat, rotateHandleMat);
+        mat4.multiply(rotateHandleMat, xFormWithPiv, rotateHandleMat);
+        if (CollisionHelper.WithinRadius([rotateHandleMat[12], rotateHandleMat[13]],  
+                                        0.40, [xPos, yPos])) {
             return { sceneNode: manipulator, handleType: "Rotate" };
         }
         
-        // Check scale handle position.
-        var scaleHandleXform = manipulatorXforms.scaleHandle.getXform();
-        if (CollisionHelper.WithinRadius([wcXform.getXPos() + scaleHandleXform.getXPos(), 
-                                        wcXform.getYPos() + scaleHandleXform.getYPos()],  
-                                        0.5, [xPos, yPos])) {
+        // Calculate the collision boundaries for scale handle.
+        var scaleHandleMat = manipulatorXforms.scaleHandle.getXform().getXform();
+        mat4.multiply(scaleHandleMat, parentMat, scaleHandleMat);
+        mat4.multiply(scaleHandleMat, xFormWithPiv, scaleHandleMat);
+        if (CollisionHelper.WithinRadius([scaleHandleMat[12], scaleHandleMat[13]],  
+                                        0.40, [xPos, yPos])) {
             return { sceneNode: manipulator, handleType: "Scale" };
         }
-        
+    }catch(err) {}
         // If no collisions, return 0.
         return 0;
     };
@@ -269,7 +294,12 @@ function DrawManager(canvasId) {
             for (i = 0; i < _sceneNodes[x].length; i++ ){
                 var currRenderable = _sceneNodes[x].getRenderableAt(i);
                 var wall = currRenderable.getXform();
-                if(wall.Contains([xPos, yPos])){
+                var wallMat = wall.getXform();
+                var snMat = _sceneNodes[x].getXform().getXform();
+                mat4.multiply(wallMat, snMat, wallMat);
+
+                if(CollisionHelper.WithinRadius([wallMat[12], wallMat[13]],  
+                                        0.40, [xPos, yPos])){
                     //return _sceneNodes[x];
                     var sceneAndObject = { sceneNode: _sceneNodes[x], renderableObj: currRenderable };
                     return sceneAndObject;
@@ -323,8 +353,12 @@ function DrawManager(canvasId) {
 //            }
             
             var wall = currRenderable.getXform();
+            var wallMat = wall.getXform();
+            var snMat = currSceneNode.getXform().getXform();
+            mat4.multiply(wallMat, snMat, wallMat);
             // If collision detected, return scene node. 
-            if(wall.Contains([xPos, yPos])){
+            if(CollisionHelper.WithinRadius([wallMat[12], wallMat[13]],  
+                                        0.40, [xPos, yPos])){
                 // return currentSceneNode if collision was found. 
                 var sceneAndObject = { sceneNode: currSceneNode, wallObject: currRenderable };
                 return sceneAndObject;
