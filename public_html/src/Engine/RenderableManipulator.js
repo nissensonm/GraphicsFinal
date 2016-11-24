@@ -12,7 +12,7 @@ function RenderableManipulator(parent, name, shader) {
     var self = {},
         _parent = parent,
         _name = name,
-        _xform = new Transform(),                     // Handle locations:
+        _xform = new PivotedTransform(),              // Handle locations:
         _moveHandle = new SquareRenderable(shader),   // center
         _rotateHandle = new SquareRenderable(shader), // top
         _rotateLine = new SquareRenderable(shader),
@@ -39,18 +39,27 @@ function RenderableManipulator(parent, name, shader) {
     };
     
     self.setParent = function (newParent) {
+        // Detach from old parent if we had one
+        if (_parent !== undefined) {
+            _parent.removeChild(this);
+        }
+        
+        // NOW set new parent
         _parent = newParent;
+        _parent.addAsChild(this);
+        // If the new parent exists, update our information
         if (_parent !== undefined) {
             // Update manipulator xform to match the parent xform
-            var pxf = _parent.getXform();
-
+            //var pxf = _parent.getXform();
+            
             // If the parent xform is a PivotedTransform, use the pivot as the position
-            if (pxf.getPivot !== undefined) {
-                var pivot = pxf.getPivot();
-                _xform.setPosition(pivot[0], pivot[1]);
-            }    
-            _xform.setSize(pxf.getWidth(), pxf.getHeight());
-            _xform.setRotationInRad(pxf.getRotationInRad());
+            //if (pxf.getPivot !== undefined) {
+                //var pivot = pxf.getPivot();
+                //_xform.setPivot(pivot[0], pivot[1]);
+                //_xform.setPosition(pivot[0], pivot[1]);
+            //}    
+            //_xform.setSize(pxf.getWidth(), pxf.getHeight());
+            //_xform.setRotationInRad(pxf.getRotationInRad());
         } else {
             // "Hide" the manipulator
             _xform.setPosition(-999,-999);
@@ -58,30 +67,30 @@ function RenderableManipulator(parent, name, shader) {
     };
 
     self.scaleParent = function (x, y) {
-        _xform.setSize(x, y);
+        //_xform.setSize(x, y);
         _parent.getXform().setSize(x, y);
     };
 
     self.moveParent = function (x, y) {
-        _xform.setPosition(x, y);
+        //_xform.setPosition(x, y);
         _parent.getXform().setPosition(x, y);
     };
     
     self.moveParentBy = function (x, y) {
-        _xform.incXPosBy(x);
-        _xform.incYPosBy(y);
+        //_xform.incXPosBy(x);
+        //_xform.incYPosBy(y);
         _parent.getXform().incXPosBy(x);
         _parent.getXform().incYPosBy(y);
     };
 
     self.rotateParent = function (rad) {
-        _xform.setRotationInRad(rad);
+        //_xform.setRotationInRad(rad);
         _parent.getXform().setRotationInRad(rad);
     };
     
     // Returns parent xform to manipulate it.
     self.getXform = function () {
-        return _parent;
+        return _parent.getXform();
     };
         
     // Gets and returns all manipulator objects to easily tell where they live 

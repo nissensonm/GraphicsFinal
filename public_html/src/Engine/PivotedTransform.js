@@ -4,7 +4,7 @@
  */
 
 /*jslint node: true, vars: true */
-/*global gEngine, vec2, mat4, Transform */
+/*global gEngine, vec2, mat4, Transform, vec3 */
 /* find out more about jslint: http://www.jslint.com/help.html */
 
 "use strict";

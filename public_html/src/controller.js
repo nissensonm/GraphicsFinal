@@ -102,6 +102,10 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 if (collisionSceneNode.sceneNode.getName() === "manipulator") {
                     dragging = collisionSceneNode.handleType;
                     dragTargetXform = collisionSceneNode.sceneNode.getXform();
+                    
+//                    console.log("wcMPos: " + wcMPos.toString() +
+//                            ";\n dragXformPos: " + dragTargetXform.getPosition().toString() +
+//                            ";\n pivot: " + dragTargetXform.getPivot().toString());
                 } else {
                     manipulator.setParent(collisionSceneNode.sceneNode);
                 }
@@ -122,7 +126,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         if (dragging === undefined) {
 
         } else { // Something was being dragged
-            dragging = "";
+            dragging = undefined;
         }
     };
 
@@ -143,17 +147,21 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             if (dragging === "Scale") {
                 manipulator.scaleParent(mDelta[0], mDelta[1]);
             } else if (dragging === "Move") {
-                manipulator.moveParentBy(mDelta[0], mDelta[1]);
+                manipulator.moveParent(wcMPos[0], wcMPos[1]);
             } else if (dragging === "Rotate") {
                 var center = dragTargetXform.getPivot(),
                     fromCenter = [wcMPos[0] - center[0], wcMPos[1] - center[1]],
-                    angle = dragTargetXform.getRotationInRad() - Math.atan(fromCenter[1] / fromCenter[0]); // sin / cos
+                    angle = Math.atan(fromCenter[1] / fromCenter[0]) - Math.PI; // sin / cos
 
+                // Domain of arctan is ( -PI/2, PI/2 ), only half of a circle...
+                if (fromCenter[0] >= 0) angle -= Math.PI;
+
+//                console.log("Center: " + center + "\nfromCenter: " + fromCenter + "\nAngle: " + angle);
                 if ($scope.rotationSnap) {
                     var quarter = Math.PI / 2;
                     angle = Math.round(angle / quarter) * quarter; // round to nearest 90 degree angle, in radians
                 } else {
-                    manipulator.rotateParent(dragTargetXform.getRotationInRad() + angle);
+                    manipulator.rotateParent( angle);
                 }
             }
             requestCanvasDraw = true;

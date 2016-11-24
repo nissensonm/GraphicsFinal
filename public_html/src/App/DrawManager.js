@@ -297,6 +297,11 @@ function DrawManager(canvasId) {
     self.recursiveCheckCollision = function(xPos, yPos, currSceneNode) {
         var i, foundCollision;
         foundCollision = 0;
+        
+        // Caution: This is a hack...
+        if (currSceneNode.getName() === "manipulator") {
+            return 0;
+        }
        
        // Check all children of the parent scene node. 
         for (i = 0; i < currSceneNode.sizeChildren(); i++){
@@ -311,6 +316,12 @@ function DrawManager(canvasId) {
         // Check all renderable objects inside passed in scene node for collision.
         for (i = 0; i < currSceneNode.size(); i++ ){
             var currRenderable = currSceneNode.getRenderableAt(i);
+            
+            // This is a hack...
+            if (currRenderable.getName() === "manipulator") {
+                continue;
+            }
+            
             var wall = currRenderable.getXform();
             // If collision detected, return scene node. 
             if(wall.Contains([xPos, yPos])){
