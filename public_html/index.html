@@ -78,7 +78,10 @@ and open the template in the editor.
                             </tr>
                             <tr>
                                 <td>
-                                    Collision: {{collision || "No collision"}}
+                                    <label>
+                                        <input type="checkbox" ng-model="rotationSnap">
+                                        Rotation snap to 90
+                                    </label>
                                 </td>
                             </tr>
                         </table>

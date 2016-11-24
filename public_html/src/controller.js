@@ -28,6 +28,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     $scope.fpsGoal = 120;
     
     $scope.collision = undefined;
+    
+    $scope.rotationSnap = false;
 
     // Potentially saves on canvas redraws by limiting the number of redraws
     // per second, where the update interval is determined by the constant
@@ -36,12 +38,14 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         drawMgr = new DrawManager("GLCanvas"),
         requestCanvasDraw = false, // This flag decides whether or not we trigger a canvas redraw in the update loop
         dragging = "",
+        dragStart = [0, 0],
+        dragTargetXform,
         wcMPos = [0, 0],
         clientX = 0,
         clientY = 0,
         canvasX = 0,
         canvasY = 0,
-        manipulator = new RenderableManipulator(undefined, drawMgr.getSquareShader()),
+        manipulator = new RenderableManipulator(undefined, "manipulator", drawMgr.getSquareShader()),
         mainView = new Camera(
             [0, 0], // wc Center
             15, // wc Wdith
@@ -92,8 +96,17 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 // Do something with the returned XForm or object: 
                 // var sceneXForm = collisionSceneNode.sceneNode.getXform();
                 // var wallXForm = collisionSceneNode.wallObject.getXform();
+                // TODO: Need to be able to check collision on manipulator as well
+                if (collisionSceneNode.sceneNode.getName() === "manipulator") {
+                    dragging = collisionSceneNode.handleType;
+                    dragTargetXform = collisionSceneNode.sceneNode.getXform();
+                } else {
+                    manipulator.setParent(collisionSceneNode.sceneNode);
+                }
+            } else {
+                // No object is selected
+                manipulator.setParent(undefined);
             }
-
             break;
         case 3: // handle RMB
             break;
@@ -103,9 +116,10 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     };
 
     $scope.onClientMouseUp = function () {
-        if (dragging === "") {
+        // If not dragging anything
+        if (dragging === undefined) {
 
-        } else {
+        } else { // Something was being dragged
             dragging = "";
         }
     };
@@ -122,6 +136,23 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         // Now process the actual input
         switch ($event.which) {
         case 1: // left
+            var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]];
+            if (dragging === "Scale") {
+                manipulator.scaleParent(mDelta[0], mDelta[1]);
+            } else if (dragging === "Move") {
+                manipulator.moveParentBy(mDelta[0], mDelta[1]);
+            } else if (dragging === "Rotate") {
+                var center = dragTargetXform.getPivot(),
+                    fromCenter = [wcMPos[0] - center[0], wcMPos[1] - center[1]],
+                    angle = dragTargetXform.getRotationInRad() - Math.atan(fromCenter[1] / fromCenter[0]); // sin / cos
+
+                if ($scope.rotationSnap) {
+                    var quarter = Math.PI / 2;
+                    angle = Math.round(angle / quarter) * quarter; // round to nearest 90 degree angle, in radians
+                } else {
+                    manipulator.rotateParent(dragTargetXform.getRotationInRad() + angle);
+                }
+            }
             requestCanvasDraw = true;
             break;
         }
@@ -131,10 +162,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     $(document).scroll(function () {
         $scope.canvasMouse.refreshBounds();
     });
-
-    // Kick off update loop with initial FPS goal
-    redrawUpdateTimer = $interval(update, 1000 / $scope.fpsGoal);
-    requestCanvasDraw = true;
 
     // Wait a bit for the page to load and then update the canvas mouse bounds.
     // This fixes the issue where placed shapes don't always match the cursor position.
@@ -152,4 +179,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     manipulator.setParent(piece);
     requestCanvasDraw = true;
     
+    // Kick off update loop with initial FPS goal
+    redrawUpdateTimer = $interval(update, 1000 / $scope.fpsGoal);
+    requestCanvasDraw = true;
 }]);

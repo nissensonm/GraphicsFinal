@@ -7,10 +7,11 @@
 /*jslint nomen: true, devel: true*/
 /*global SquareRenderable, Transform, mat4*/
 
-function RenderableManipulator(parent, shader) {
+function RenderableManipulator(parent, name, shader) {
     'use strict';
     var self = {},
         _parent = parent,
+        _name = name,
         _xform = new Transform(),                     // Handle locations:
         _moveHandle = new SquareRenderable(shader),   // center
         _rotateHandle = new SquareRenderable(shader), // top
@@ -19,10 +20,16 @@ function RenderableManipulator(parent, shader) {
         _scaleLine = new SquareRenderable(shader);
 
     self.draw = function (camera) {
-        var parentMat = _parent.getXform().getXform();
-        // Transform pivot point by parent transform
-        mat4.multiply(parentMat, _xform.getXform(), parentMat);
-
+        var parentMat = undefined;
+        // Only get parent transform matrix if the parent is defined
+        if (_parent !== undefined) {
+            parentMat = _parent.getXform().getXform();
+            // Transform pivot point by parent transform
+            mat4.multiply(parentMat, _xform.getXform(), parentMat);
+        } else {
+            parentMat = _xform.getXform();
+        }
+        
         _rotateLine.draw(camera, parentMat);
         _scaleLine.draw(camera, parentMat);
         // Draw handles on top of connecting lines
@@ -33,16 +40,21 @@ function RenderableManipulator(parent, shader) {
     
     self.setParent = function (newParent) {
         _parent = newParent;
-        // Update manipulator xform to match the parent xform
-        var pxf = _parent.getXform();
-        
-        // If the parent xform is a PivotedTransform, use the pivot as the position
-        if (pxf.getPivot !== undefined) {
-            var pivot = pxf.getPivot();
-            _xform.setPosition(pivot[0], pivot[1]);
-        }    
-        _xform.setSize(pxf.getWidth(), pxf.getHeight());
-        _xform.setRotationInRad(pxf.getRotationInRad());
+        if (_parent !== undefined) {
+            // Update manipulator xform to match the parent xform
+            var pxf = _parent.getXform();
+
+            // If the parent xform is a PivotedTransform, use the pivot as the position
+            if (pxf.getPivot !== undefined) {
+                var pivot = pxf.getPivot();
+                _xform.setPosition(pivot[0], pivot[1]);
+            }    
+            _xform.setSize(pxf.getWidth(), pxf.getHeight());
+            _xform.setRotationInRad(pxf.getRotationInRad());
+        } else {
+            // "Hide" the manipulator
+            _xform.setPosition(-999,-999);
+        }
     };
 
     self.scaleParent = function (x, y) {
@@ -53,6 +65,13 @@ function RenderableManipulator(parent, shader) {
     self.moveParent = function (x, y) {
         _xform.setPosition(x, y);
         _parent.getXform().setPosition(x, y);
+    };
+    
+    self.moveParentBy = function (x, y) {
+        _xform.incXPosBy(x);
+        _xform.incYPosBy(y);
+        _parent.getXform().incXPosBy(x);
+        _parent.getXform().incYPosBy(y);
     };
 
     self.rotateParent = function (rad) {
@@ -87,6 +106,10 @@ function RenderableManipulator(parent, shader) {
     xf = _moveHandle.getXform();
     xf.setSize(0.75, 0.75);
     xf.setPosition(0, 0);
+    
+    self.getName = function () {
+        return _name;
+    };
 
     return self;
 }

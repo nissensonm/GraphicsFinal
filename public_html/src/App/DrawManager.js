@@ -223,6 +223,9 @@ function DrawManager(canvasId) {
         var x = 0;
         var foundCollision = 0;
         
+        // TODO: Return the following structure for collision with a RenderableManipulator:
+        // { sceneNode: RenderableManipulator, handleType: "Scale" || "Rotate" || "Move" }
+        
         // First check all renderables of of top-level parent scene nodes.
         // Done outside of recursion to make logic easier.
         for (x in _sceneNodes){
