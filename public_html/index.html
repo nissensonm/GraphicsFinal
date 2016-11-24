@@ -79,8 +79,8 @@ and open the template in the editor.
                             <tr>
                                 <td>
                                     <label>
-                                        <input type="checkbox" ng-model="rotationSnap">
-                                        Rotation snap to 90
+                                        Rotation snap (deg):
+                                        <input type="number" ng-model="rotationSnap" min="1" max="360" string-to-number>
                                     </label>
                                 </td>
                             </tr>

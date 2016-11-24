@@ -52,6 +52,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             [0, 0, $scope.CANVAS_SIZE[0], $scope.CANVAS_SIZE[1]]   // viewport: left, bottom, width, height
         );
 
+    $scope.rotationSnap = 1;
     $scope.drawMgr = drawMgr;
 
     // Fired by redrawUpdateTimer. Controller-side update logic goes here.
@@ -147,7 +148,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             if (dragging === "Scale") {
                 manipulator.scaleParent(mDelta[0], mDelta[1]);
             } else if (dragging === "Move") {
-                manipulator.moveParent(wcMPos[0], wcMPos[1]);
+                var pivot = dragTargetXform.getPivot();
+                manipulator.moveParent(wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]);
             } else if (dragging === "Rotate") {
                 var center = dragTargetXform.getPivot(),
                     fromCenter = [wcMPos[0] - center[0], wcMPos[1] - center[1]],
@@ -155,14 +157,16 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
                 // Domain of arctan is ( -PI/2, PI/2 ), only half of a circle...
                 if (fromCenter[0] >= 0) angle -= Math.PI;
+                
+                // Fix angle offset
+                angle -= Math.PI / 2;
 
 //                console.log("Center: " + center + "\nfromCenter: " + fromCenter + "\nAngle: " + angle);
                 if ($scope.rotationSnap) {
-                    var quarter = Math.PI / 2;
-                    angle = Math.round(angle / quarter) * quarter; // round to nearest 90 degree angle, in radians
-                } else {
-                    manipulator.rotateParent( angle);
+                    var snap = parseInt($scope.rotationSnap) * Math.PI / 180;
+                    angle = Math.round(angle / snap) * snap; // round to nearest 90 degree angle, in radians
                 }
+                manipulator.rotateParent( angle);
             }
             requestCanvasDraw = true;
             break;

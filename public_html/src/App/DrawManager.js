@@ -318,9 +318,9 @@ function DrawManager(canvasId) {
             var currRenderable = currSceneNode.getRenderableAt(i);
             
             // This is a hack...
-            if (currRenderable.getName() === "manipulator") {
-                continue;
-            }
+//            if (currRenderable.getName() === "manipulator") {
+//                continue;
+//            }
             
             var wall = currRenderable.getXform();
             // If collision detected, return scene node. 

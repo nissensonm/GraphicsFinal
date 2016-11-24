@@ -46,11 +46,15 @@ function RenderableManipulator(parent, name, shader) {
         
         // NOW set new parent
         _parent = newParent;
-        _parent.addAsChild(this);
         // If the new parent exists, update our information
         if (_parent !== undefined) {
+            _parent.addAsChild(this);
+            
+            
+            var pxf = _parent.getXform();
+            var pivot = pxf.getPivot();
+            _xform.setPosition(pivot[0], pivot[1]);
             // Update manipulator xform to match the parent xform
-            //var pxf = _parent.getXform();
             
             // If the parent xform is a PivotedTransform, use the pivot as the position
             //if (pxf.getPivot !== undefined) {
