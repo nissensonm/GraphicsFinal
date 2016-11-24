@@ -307,10 +307,11 @@ function DrawManager(canvasId) {
             }
         }
         
+        var holdParentsMat = [];
         i = 0;
         // Now recursively check all children of scene nodes.
         for (i in _sceneNodes) {
-             foundCollision = self.recursiveCheckCollision(xPos, yPos, _sceneNodes[i]);
+             foundCollision = self.recursiveCheckCollision(xPos, yPos, _sceneNodes[i], holdParentsMat);
             // If a value that is not 0 is returned, then some sort of collision was found.  
             // Pass the sceneNode back up.
             if (foundCollision !== 0){
@@ -324,7 +325,7 @@ function DrawManager(canvasId) {
     // Helper function, recusively checks all scene nodes and their renderable object.
     // Returns of 0 means nothing was found. 
     // Return sceneNode returns the corresponding sceneNode.
-    self.recursiveCheckCollision = function(xPos, yPos, currSceneNode) {
+    self.recursiveCheckCollision = function(xPos, yPos, currSceneNode, holdParentsMat) {
         var i, foundCollision;
         foundCollision = 0;
         
@@ -332,15 +333,21 @@ function DrawManager(canvasId) {
         if (currSceneNode.getName() === "manipulator") {
             return 0;
         }
-       
+        
        // Check all children of the parent scene node. 
         for (i = 0; i < currSceneNode.sizeChildren(); i++){
-            foundCollision = self.recursiveCheckCollision(xPos, yPos, currSceneNode.getChildAt(i));
+            // Add parent mat.
+            holdParentsMat.push(currSceneNode.getXform().getXform());
+
+            foundCollision = self.recursiveCheckCollision(xPos, yPos, currSceneNode.getChildAt(i), holdParentsMat);
             // If foundCollision is no longer 0, then a collision was found. 
             // Stop comparing and return it back up through the stack frames.
             if (foundCollision !== 0){
                 return foundCollision;
             }
+            
+            // Remove parent mat so it does not get added to the next child.
+            holdParentsMat.pop(currSceneNode.getXform().getXform());
         }
         
         // Check all renderable objects inside passed in scene node for collision.
@@ -355,7 +362,13 @@ function DrawManager(canvasId) {
             var wall = currRenderable.getXform();
             var wallMat = wall.getXform();
             var snMat = currSceneNode.getXform().getXform();
+            
+            var x = 0;
+            if (holdParentsMat.length > 0)
+                for (x = holdParentsMat.length - 1; x >= 0; x--)
+                    mat4.multiply(wallMat, holdParentsMat[x], wallMat);
             mat4.multiply(wallMat, snMat, wallMat);
+
             // If collision detected, return scene node. 
             if(CollisionHelper.WithinRadius([wallMat[12], wallMat[13]],  
                                         0.40, [xPos, yPos])){

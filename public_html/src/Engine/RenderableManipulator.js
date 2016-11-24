@@ -53,7 +53,8 @@ function RenderableManipulator(parent, name, shader) {
             
             var pxf = _parent.getXform();
             var pivot = pxf.getPivot();
-            _xform.setPosition(pivot[0], pivot[1]);
+            
+            _xform.setPosition(pivot[0], pivot[1]);            
             // Update manipulator xform to match the parent xform
             
             // If the parent xform is a PivotedTransform, use the pivot as the position
@@ -94,6 +95,10 @@ function RenderableManipulator(parent, name, shader) {
     
     // Returns parent xform to manipulate it.
     self.getXform = function () {
+        return _parent.getXform();
+    };
+    
+    self.getParent = function () {
         return _parent.getXform();
     };
         
