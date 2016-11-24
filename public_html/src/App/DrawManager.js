@@ -215,16 +215,53 @@ function DrawManager(canvasId) {
         //TODO: Any update logic to do in the model?
     };
 
+    // Checks the manipulator object for collisions.
+    self.checkManipulatorCollision = function(xPos, yPos, manipulator){
+        var manipulatorXforms = manipulator.getPositions();
+        var wcXform = manipulatorXforms.wcXform; 
+        
+        // Check move manipulator position.
+        if (CollisionHelper.WithinRadius([wcXform.getXPos(), wcXform.getYPos()],  
+                                        0.5, [xPos, yPos])) {
+            return { sceneNode: manipulator, handleType: "Move" };
+        }
+        
+        // Check rotate handle position.
+        var rotateHandleXform = manipulatorXforms.rotateHandle.getXform();
+        if (CollisionHelper.WithinRadius([wcXform.getXPos() + rotateHandleXform.getXPos(), 
+                                        wcXform.getYPos() + rotateHandleXform.getYPos()],  
+                                        0.5, [xPos, yPos])) {
+            return { sceneNode: manipulator, handleType: "Rotate" };
+        }
+        
+        // Check scale handle position.
+        var scaleHandleXform = manipulatorXforms.scaleHandle.getXform();
+        if (CollisionHelper.WithinRadius([wcXform.getXPos() + scaleHandleXform.getXPos(), 
+                                        wcXform.getYPos() + scaleHandleXform.getYPos()],  
+                                        0.5, [xPos, yPos])) {
+            return { sceneNode: manipulator, handleType: "Scale" };
+        }
+        
+        // If no collisions, return 0.
+        return 0;
+    };
+
     // This checks collision based on the xPos and yPos passed in.
     // Collision is checked against ALL Scene Nodes, their children, and their 
     // associated renderable objects. 
-    self.checkCollision = function(xPos, yPos) {
+    self.checkCollision = function(xPos, yPos, manipulator) {
         var i = 0;
         var x = 0;
         var foundCollision = 0;
         
-        // TODO: Return the following structure for collision with a RenderableManipulator:
-        // { sceneNode: RenderableManipulator, handleType: "Scale" || "Rotate" || "Move" }
+        // Check manipulator points to see if a collision occured there.
+        var collisionWithManipulator = self.checkManipulatorCollision(xPos, yPos, manipulator);
+        if (collisionWithManipulator !== 0)
+        {
+            // returns in the following format.
+            // { sceneNode: RenderableManipulator, handleType: "Scale" || "Rotate" || "Move" }
+            return collisionWithManipulator;
+        }
         
         // First check all renderables of of top-level parent scene nodes.
         // Done outside of recursion to make logic easier.

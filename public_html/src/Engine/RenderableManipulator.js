@@ -79,6 +79,20 @@ function RenderableManipulator(parent, name, shader) {
         _parent.getXform().setRotationInRad(rad);
     };
     
+    // Returns parent xform to manipulate it.
+    self.getXform = function () {
+        return _parent;
+    };
+        
+    // Gets and returns all manipulator objects to easily tell where they live 
+    // (in case their position changes).
+    self.getPositions = function () {
+        return {    wcXform: _xform,
+                    rotateHandle: _rotateHandle, 
+                    scaleHandle: _scaleHandle,
+                    moveHandle: _moveHandle  };
+    };
+    
     // Top
     _rotateHandle.setColor([0, 0.9, 0, 1]);
     var xf = _rotateHandle.getXform();

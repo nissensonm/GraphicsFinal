@@ -84,10 +84,12 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     $scope.onClientMouseClick = function ($event) {
         switch ($event.which) {
         case 1: // handle LMB
+            dragStart[0] = mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event));
+            dragStart[1] = mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event));
             requestCanvasDraw = true;
-            // Returns a non-0 value if a collision occured with the mouse.
+            // Returns a non-0 value if a collision occured with the mouse.            
             var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)) + 0.3, 
-                mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)) + 0.4);
+                mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)) + 0.4, manipulator);
 
             // If collisionSceneNode !== 0, then the scene node was returned.
             // If it is 0 then no collision occured.
@@ -129,14 +131,15 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         // TODO: What of these do we need to keep?
         clientX = $event.pageX;
         clientY = $event.pageY;
-        canvasX = $scope.canvasMouse.getPixelXPos($event);
-        canvasY = $scope.canvasMouse.getPixelYPos($event);
-        wcMPos = [mainView.mouseWCX($scope.canvasX), mainView.mouseWCY($scope.canvasY)];
+   //     canvasX = $scope.canvasMouse.getPixelXPos($event);
+   //     canvasY = $scope.canvasMouse.getPixelYPos($event);
+        wcMPos = [mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)), mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event))];
 
         // Now process the actual input
         switch ($event.which) {
         case 1: // left
             var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]];
+            // console.log(wcMPos[0] + " " + dragStart[0] + " " + wcMPos[1] + " " + dragStart[1] +" " + canvasX);
             if (dragging === "Scale") {
                 manipulator.scaleParent(mDelta[0], mDelta[1]);
             } else if (dragging === "Move") {
