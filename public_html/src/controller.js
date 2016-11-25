@@ -98,22 +98,9 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 if (collisionSceneNode.sceneNode.getName() === "manipulator") {
                     dragging = collisionSceneNode.handleType;
                     dragTargetXform = collisionSceneNode.sceneNode.getXform();
-
-//                    console.log("wcMPos: " + wcMPos.toString() +
-//                            ";\n dragXformPos: " + dragTargetXform.getPosition().toString() +
-//                            ";\n pivot: " + dragTargetXform.getPivot().toString());
                 } else {
-                    //var allSn = drawMgr.getSceneNodes();
-                   // var i = 0;
-//                    console.log(allSn.length);
-                  //  console.log(collisionSceneNode.wallMat[0]);
-                    
-                    
-                   // console.log(collisionSceneNode.sceneNode.getName());
                     manipulator.setOtherParents(collisionSceneNode.wallMat);
-                    
-                    manipulator.setParent(collisionSceneNode.sceneNode);
-                    
+                    manipulator.setParent(collisionSceneNode.sceneNode);    
                 }
             } else {
                 // No object is selected
@@ -137,8 +124,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.onClientMouseMove = function ($event) {
         // Update mouse position data
-       // clientX = $event.pageX;
-        // clientY = $event.pageY;
         wcMPos = [mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)), mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event))];
 
         // Now process the actual input
@@ -148,12 +133,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
                 pivot =  dragTargetXform.getPivot();
                 
-            // console.log(wcMPos[0] + " " + dragStart[0] + " " + wcMPos[1] + " " + dragStart[1] +" " + canvasX);
             if (dragging === "Scale") {
-                /*if (mDelta[0] < 0.50 && mDelta[0] >= 0)
-                    mDelta[0] = 0.25;
-                else if (mDelta[1] < 0.50 && mDelta[1] >= 0)
-                    mDelta[1] = 0.25;*/
+                    // scale down by 1000 to make it feel smoother.
                     mDelta[0] = mDelta[0] / 1000;
                     mDelta[1] = mDelta[1] / 1000;
                 manipulator.scaleParent(mDelta[0], mDelta[1]);
@@ -175,7 +156,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 // Fix angle offset
                 angle -= Math.PI / 2;
 
-//                console.log("Center: " + center + "\nfromCenter: " + fromCenter + "\nAngle: " + angle);
                 if ($scope.rotationSnap) {
                     var snap = parseInt($scope.rotationSnap) * Math.PI / 180;
                     angle = Math.round(angle / snap) * snap; // round to nearest 90 degree angle, in radians

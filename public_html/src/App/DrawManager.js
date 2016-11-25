@@ -222,43 +222,19 @@ function DrawManager(canvasId) {
     // Checks the manipulator object for collisions.
     self.checkManipulatorCollision = function(xPos, yPos, manipulator){
         try {
-        var manipulatorXforms = manipulator.getPositions();
-
-
-       // var pivotTest = manipulator.getXform();
-       // var pivot = pivotTest.getPivot();
-        
-        // Calculate the collision boundaries for move handle.
-        var moveHandleMat = manipulatorXforms.moveHandle.getXform().getXform();
-        
+        var manipulatorXforms = manipulator.getPositions();  
+        var moveHandleMat = manipulatorXforms.moveHandle.getXform().getXform(); 
         var xFormWithPiv = manipulatorXforms.wcXform.getXform();
-        
         var parentMat = manipulatorXforms.parentMat;
-        
         var otherParents = manipulator.getOtherParents();
         var i = 0;
         
+        // Calculate the collision boundaries for move handle.
         if (otherParents.length > 0)
             for (i in otherParents){
                 mat4.multiply(moveHandleMat, otherParents[i], moveHandleMat);}
-
-        mat4.multiply(moveHandleMat, xFormWithPiv, moveHandleMat);
-        
+        mat4.multiply(moveHandleMat, xFormWithPiv, moveHandleMat);   
         mat4.multiply(moveHandleMat, parentMat, moveHandleMat);
-
-        //mat4.multiply(moveHandleMat, parentMat, moveHandleMat);
-       // mat4.multiply(moveHandleMat, xFormWithPiv, moveHandleMat);
-
-       // console.log( "Pivot: " + pivot[0] + " " + pivot[1]);
-
-        console.log("Clicked Position: " + xPos + ", " + yPos);
-        i = 0;
-       //for (i in moveHandleMat){
-        console.log(" I think the box is at... " + moveHandleMat[12]+ ", " + moveHandleMat[13]);
-        //}
-
-        
-        
         if (CollisionHelper.WithinRadius([moveHandleMat[12], moveHandleMat[13]],  
                                          0.40, [xPos, yPos])) {
             return { sceneNode: manipulator, handleType: "Move" };
@@ -266,15 +242,10 @@ function DrawManager(canvasId) {
         
         // Calculate the collision boundaries for rotation handle.
         var rotateHandleMat = manipulatorXforms.rotateHandle.getXform().getXform();
-       // mat4.multiply(rotateHandleMat, parentMat, rotateHandleMat);
-       // mat4.multiply(rotateHandleMat, xFormWithPiv, rotateHandleMat);
-        
         if (otherParents.length > 0)
             for (i in otherParents){
                 mat4.multiply(rotateHandleMat, otherParents[i], rotateHandleMat);}
-
         mat4.multiply(rotateHandleMat, xFormWithPiv, rotateHandleMat);
-        
         mat4.multiply(rotateHandleMat, parentMat, rotateHandleMat);
         if (CollisionHelper.WithinRadius([rotateHandleMat[12], rotateHandleMat[13]],  
                                         0.40, [xPos, yPos])) {
@@ -283,13 +254,9 @@ function DrawManager(canvasId) {
         
         // Calculate the collision boundaries for scale handle.
         var scaleHandleMat = manipulatorXforms.scaleHandle.getXform().getXform();
-        //mat4.multiply(scaleHandleMat, parentMat, scaleHandleMat);
-        //mat4.multiply(scaleHandleMat, xFormWithPiv, scaleHandleMat);
-        
         if (otherParents.length > 0)
             for (i in otherParents){
                 mat4.multiply(scaleHandleMat, otherParents[i], scaleHandleMat);}
-
         mat4.multiply(scaleHandleMat, xFormWithPiv, scaleHandleMat); 
         mat4.multiply(scaleHandleMat, parentMat, scaleHandleMat);
         if (CollisionHelper.WithinRadius([scaleHandleMat[12], scaleHandleMat[13]],  
@@ -359,7 +326,7 @@ function DrawManager(canvasId) {
         var i, foundCollision;
         foundCollision = 0;
         
-        // Caution: This is a hack...
+        // Caution: This is a temporary hack...
         if (currSceneNode.getName() === "manipulator") {
             return 0;
         }
@@ -384,11 +351,6 @@ function DrawManager(canvasId) {
         for (i = 0; i < currSceneNode.size(); i++ ){
             var currRenderable = currSceneNode.getRenderableAt(i);
             
-            // This is a hack...
-//            if (currRenderable.getName() === "manipulator") {
-//                continue;
-//            }
-            
             var wall = currRenderable.getXform();
             var wallMat = wall.getXform();
             var snMat = currSceneNode.getXform().getXform();
@@ -398,15 +360,14 @@ function DrawManager(canvasId) {
             if (holdParentsMat.length > 0)
                 for (x = holdParentsMat.length - 1; x >= 0; x--){
                     mat4.multiply(wallMat, holdParentsMat[x], wallMat);
+                    // Gather parent matricies to help with transformations down the line.
                     snMats.push(holdParentsMat[x]);
                 }
             mat4.multiply(wallMat, snMat, wallMat);
 
-            // If collision detected, return scene node. 
+            // If collision detected, return scene node, currRenderable, and parent mats. 
             if(CollisionHelper.WithinRadius([wallMat[12], wallMat[13]],  
                                         0.40, [xPos, yPos])){
-                // return currentSceneNode if collision was found. 
-                //console.log(currSceneNode.getName());
                 var sceneAndObject = { sceneNode: currSceneNode, wallObject: currRenderable, wallMat: snMats };
                 return sceneAndObject;
             }
