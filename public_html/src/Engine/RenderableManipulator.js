@@ -7,7 +7,7 @@
 /*jslint nomen: true, devel: true*/
 /*global SquareRenderable, Transform, mat4*/
 
-function RenderableManipulator(parent, name, shader) {
+function RenderableManipulator(parent, name, shader, otherParents) {
     'use strict';
     var self = {},
         _parent = parent,
@@ -17,25 +17,54 @@ function RenderableManipulator(parent, name, shader) {
         _rotateHandle = new SquareRenderable(shader), // top
         _rotateLine = new SquareRenderable(shader),
         _scaleHandle = new SquareRenderable(shader),  // right
-        _scaleLine = new SquareRenderable(shader);
+        _scaleLine = new SquareRenderable(shader),
+        _otherParents = [];
 
-    self.draw = function (camera) {
+    self.draw = function (camera) {        
         var parentMat = undefined;
         // Only get parent transform matrix if the parent is defined
-        if (_parent !== undefined) {
-            parentMat = _parent.getXform().getXform();
-            // Transform pivot point by parent transform
-            mat4.multiply(parentMat, _xform.getXform(), parentMat);
+        if (_parent !== undefined) {  
+            try {
+                var otherParents = _otherParents;
+                parentMat = _parent.getXform().getXform();
+                // Transform pivot point by parent transform
+
+                var i = 0;
+                if (otherParents.length > 0)
+                    for (i in otherParents)
+                        mat4.multiply(parentMat, otherParents[i], parentMat);
+                mat4.multiply(parentMat, _xform.getXform(), parentMat);
+
+
+                // Calculate the proper pivot location.
+                var xformCalculatePosition = _xform.getXform();
+                if (otherParents.length > 0)
+                    for (i in otherParents){
+                        mat4.multiply(xformCalculatePosition, otherParents[i], xformCalculatePosition);}
+                mat4.multiply(xformCalculatePosition, _parent.getXform().getXform(), xformCalculatePosition);
+
+
+                parentMat[12] =  xformCalculatePosition[12];
+                parentMat[13] =  xformCalculatePosition[13];
+            } catch(err) {}
         } else {
             parentMat = _xform.getXform();
         }
-        
+  
         _rotateLine.draw(camera, parentMat);
         _scaleLine.draw(camera, parentMat);
         // Draw handles on top of connecting lines
         _moveHandle.draw(camera, parentMat);
         _rotateHandle.draw(camera, parentMat);
         _scaleHandle.draw(camera, parentMat);
+    };
+    
+    self.setOtherParents = function (newParents) {
+        _otherParents = newParents;
+    };
+    
+    self.getOtherParents = function () {
+        return _otherParents;
     };
     
     self.setParent = function (newParent) {
@@ -73,7 +102,7 @@ function RenderableManipulator(parent, name, shader) {
 
     self.scaleParent = function (x, y) {
         //_xform.setSize(x, y);
-        _parent.getXform().setSize(x, y);
+        _parent.getXform().incSizeBy(x, y);
     };
 
     self.moveParent = function (x, y) {
@@ -108,7 +137,8 @@ function RenderableManipulator(parent, name, shader) {
         return {    wcXform: _xform,
                     rotateHandle: _rotateHandle, 
                     scaleHandle: _scaleHandle,
-                    moveHandle: _moveHandle  };
+                    moveHandle: _moveHandle,
+                    parentMat: _parent.getXform().getXform()};
     };
     
     // Top

@@ -60,7 +60,11 @@ function DrawManager(canvasId) {
             _sceneNodes[i].draw(camera);
         }
     };
-
+    
+    self.getSceneNodes = function (){
+        return _sceneNodes;
+    };
+    
     self.getSupportedShapes = function () {
         return PrimitiveShape;
     };
@@ -229,19 +233,30 @@ function DrawManager(canvasId) {
         
         var xFormWithPiv = manipulatorXforms.wcXform.getXform();
         
+        var parentMat = manipulatorXforms.parentMat;
         
-        var parentMat = manipulator.getXform().getXform();
-        mat4.multiply(moveHandleMat, parentMat, moveHandleMat);
+        var otherParents = manipulator.getOtherParents();
+        var i = 0;
+        
+        if (otherParents.length > 0)
+            for (i in otherParents){
+                mat4.multiply(moveHandleMat, otherParents[i], moveHandleMat);}
+
         mat4.multiply(moveHandleMat, xFormWithPiv, moveHandleMat);
+        
+        mat4.multiply(moveHandleMat, parentMat, moveHandleMat);
+
+        //mat4.multiply(moveHandleMat, parentMat, moveHandleMat);
+       // mat4.multiply(moveHandleMat, xFormWithPiv, moveHandleMat);
 
        // console.log( "Pivot: " + pivot[0] + " " + pivot[1]);
 
-       // console.log("Clicked Position: " + xPos + ", " + yPos);
+        console.log("Clicked Position: " + xPos + ", " + yPos);
+        i = 0;
+       //for (i in moveHandleMat){
+        console.log(" I think the box is at... " + moveHandleMat[12]+ ", " + moveHandleMat[13]);
+        //}
 
-      //  var i = 0;
-        //for (i in moveHandleMat){
-       //     console.log(i + " " + moveHandleMat[i]);
-      //  }
         
         
         if (CollisionHelper.WithinRadius([moveHandleMat[12], moveHandleMat[13]],  
@@ -251,8 +266,16 @@ function DrawManager(canvasId) {
         
         // Calculate the collision boundaries for rotation handle.
         var rotateHandleMat = manipulatorXforms.rotateHandle.getXform().getXform();
-        mat4.multiply(rotateHandleMat, parentMat, rotateHandleMat);
+       // mat4.multiply(rotateHandleMat, parentMat, rotateHandleMat);
+       // mat4.multiply(rotateHandleMat, xFormWithPiv, rotateHandleMat);
+        
+        if (otherParents.length > 0)
+            for (i in otherParents){
+                mat4.multiply(rotateHandleMat, otherParents[i], rotateHandleMat);}
+
         mat4.multiply(rotateHandleMat, xFormWithPiv, rotateHandleMat);
+        
+        mat4.multiply(rotateHandleMat, parentMat, rotateHandleMat);
         if (CollisionHelper.WithinRadius([rotateHandleMat[12], rotateHandleMat[13]],  
                                         0.40, [xPos, yPos])) {
             return { sceneNode: manipulator, handleType: "Rotate" };
@@ -260,8 +283,15 @@ function DrawManager(canvasId) {
         
         // Calculate the collision boundaries for scale handle.
         var scaleHandleMat = manipulatorXforms.scaleHandle.getXform().getXform();
+        //mat4.multiply(scaleHandleMat, parentMat, scaleHandleMat);
+        //mat4.multiply(scaleHandleMat, xFormWithPiv, scaleHandleMat);
+        
+        if (otherParents.length > 0)
+            for (i in otherParents){
+                mat4.multiply(scaleHandleMat, otherParents[i], scaleHandleMat);}
+
+        mat4.multiply(scaleHandleMat, xFormWithPiv, scaleHandleMat); 
         mat4.multiply(scaleHandleMat, parentMat, scaleHandleMat);
-        mat4.multiply(scaleHandleMat, xFormWithPiv, scaleHandleMat);
         if (CollisionHelper.WithinRadius([scaleHandleMat[12], scaleHandleMat[13]],  
                                         0.40, [xPos, yPos])) {
             return { sceneNode: manipulator, handleType: "Scale" };
@@ -364,16 +394,20 @@ function DrawManager(canvasId) {
             var snMat = currSceneNode.getXform().getXform();
             
             var x = 0;
+            var snMats = [];
             if (holdParentsMat.length > 0)
-                for (x = holdParentsMat.length - 1; x >= 0; x--)
+                for (x = holdParentsMat.length - 1; x >= 0; x--){
                     mat4.multiply(wallMat, holdParentsMat[x], wallMat);
+                    snMats.push(holdParentsMat[x]);
+                }
             mat4.multiply(wallMat, snMat, wallMat);
 
             // If collision detected, return scene node. 
             if(CollisionHelper.WithinRadius([wallMat[12], wallMat[13]],  
                                         0.40, [xPos, yPos])){
                 // return currentSceneNode if collision was found. 
-                var sceneAndObject = { sceneNode: currSceneNode, wallObject: currRenderable };
+                //console.log(currSceneNode.getName());
+                var sceneAndObject = { sceneNode: currSceneNode, wallObject: currRenderable, wallMat: snMats };
                 return sceneAndObject;
             }
         }

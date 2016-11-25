@@ -103,7 +103,17 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 //                            ";\n dragXformPos: " + dragTargetXform.getPosition().toString() +
 //                            ";\n pivot: " + dragTargetXform.getPivot().toString());
                 } else {
+                    //var allSn = drawMgr.getSceneNodes();
+                   // var i = 0;
+//                    console.log(allSn.length);
+                  //  console.log(collisionSceneNode.wallMat[0]);
+                    
+                    
+                   // console.log(collisionSceneNode.sceneNode.getName());
+                    manipulator.setOtherParents(collisionSceneNode.wallMat);
+                    
                     manipulator.setParent(collisionSceneNode.sceneNode);
+                    
                 }
             } else {
                 // No object is selected
@@ -137,8 +147,15 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             try {
             var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
                 pivot =  dragTargetXform.getPivot();
+                
             // console.log(wcMPos[0] + " " + dragStart[0] + " " + wcMPos[1] + " " + dragStart[1] +" " + canvasX);
             if (dragging === "Scale") {
+                /*if (mDelta[0] < 0.50 && mDelta[0] >= 0)
+                    mDelta[0] = 0.25;
+                else if (mDelta[1] < 0.50 && mDelta[1] >= 0)
+                    mDelta[1] = 0.25;*/
+                    mDelta[0] = mDelta[0] / 1000;
+                    mDelta[1] = mDelta[1] / 1000;
                 manipulator.scaleParent(mDelta[0], mDelta[1]);
             } else if (dragging === "Move") {
                 // Movement is relative to the pivot, but the translation won't be the same WC position...
