@@ -99,7 +99,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         requestCanvasDraw = true;
     };
     
-<<<<<<< HEAD
+
     $scope.toggleRunMode = function () {
         if ($scope.runMode) {
             // Turn on run mode
@@ -109,7 +109,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         } else {
             // Turn off run mode
         }
-=======
+    }
+
     $scope.onClientButtonPress = function($event) {
         if ($event.keyCode === 119){
             // W
@@ -155,7 +156,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         
 
         requestCanvasDraw = true;
->>>>>>> origin/master
+
     };
 
     // Handle client mouse clicks and send to model
