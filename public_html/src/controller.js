@@ -99,6 +99,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         requestCanvasDraw = true;
     };
     
+<<<<<<< HEAD
     $scope.toggleRunMode = function () {
         if ($scope.runMode) {
             // Turn on run mode
@@ -108,6 +109,49 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         } else {
             // Turn off run mode
         }
+=======
+    $scope.onClientButtonPress = function($event) {
+        // W = 119, A = 97, S = 115, D = 100
+        if ($event.keyCode === 119){
+            // W
+            // Check if the manipulator was set. If it was, draw child near it.
+            if (manipulator.isManipulatorSet())
+                $scope.drawChildNearParentWall(0, 0.50);
+        }
+        else if ($event.keyCode === 97){
+            // A
+            if (manipulator.isManipulatorSet())
+                $scope.drawChildNearParentWall(-0.50, 0);
+        }
+        else if ($event.keyCode === 115){
+            // S
+            if (manipulator.isManipulatorSet())
+                $scope.drawChildNearParentWall(0, -0.5);
+            
+        }
+        else if ($event.keyCode === 100){
+            // D
+            if (manipulator.isManipulatorSet())
+                $scope.drawChildNearParentWall(0.50, 0);
+        }
+    };
+    
+    // Draws a new wall based on the delta passed in from the manipulator's target.
+    $scope.drawChildNearParentWall = function(xDelta, yDelta) {
+        // Get manipulator's current position.
+        var position = manipulator.getParentPosition();
+        // Adjust position with delta.
+        var position = [position[0] + xDelta, position[1] + yDelta];
+        //console.log("Piv: " + position[0] + ", " + position[1]);
+        
+        // Create new wall, have manipulator pass it to its parent and add it.
+        var newWall = new MazePiece(drawMgr.getSquareShader(), "newWallChild", position[0], position[1]);
+        manipulator.addNewBlockAsChild(newWall);
+
+        
+
+        requestCanvasDraw = true;
+>>>>>>> origin/master
     };
 
     // Handle client mouse clicks and send to model
@@ -216,7 +260,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     setTimeout(function () {
         $scope.canvasMouse.refreshBounds();
     }, 500);
-
+    
     // Set up hierarchy
     var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 0, -5);
     drawMgr.addSceneNode(piece);
@@ -226,7 +270,20 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     kid.addAsChild(grandkid);
     manipulator.setParent(piece);
     requestCanvasDraw = true;
-
+    
+    var aWizard = new Wizard(drawMgr.getSquareShader(), "A Powerful Wizard", 0, 0);
+    drawMgr.addSceneNode(aWizard);
+    var star = new Star(drawMgr.getCircleShader(), "star", -.5, 0);
+    aWizard.addAsChild(star);
+    star = new Star(drawMgr.getCircleShader(), "star", .5, 0);
+    aWizard.addAsChild(star);
+    star = new Star(drawMgr.getCircleShader(), "star", -.35, 1);
+    aWizard.addAsChild(star);
+    star = new Star(drawMgr.getCircleShader(), "star", .35, 1);
+    aWizard.addAsChild(star);
+    star = new Star(drawMgr.getCircleShader(), "star", 0, 1.25);
+    aWizard.addAsChild(star);
+    
     // Kick off update loop with initial FPS goal
     redrawUpdateTimer = $interval(update, 1000 / $scope.fpsGoal);
     requestCanvasDraw = true;

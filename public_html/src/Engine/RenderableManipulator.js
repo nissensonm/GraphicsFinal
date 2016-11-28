@@ -34,7 +34,7 @@ function RenderableManipulator(parent, name, shader, otherParents) {
                     for (i in otherParents)
                         mat4.multiply(parentMat, otherParents[i], parentMat);
                 mat4.multiply(parentMat, _xform.getXform(), parentMat);
-
+                
                 // Calculate the proper pivot location.
                 var xformCalculatePosition = _xform.getXform();
                 if (otherParents.length > 0)
@@ -104,6 +104,19 @@ function RenderableManipulator(parent, name, shader, otherParents) {
         }
     };
 
+    // Get parent's x, y position.
+    self.getParentPosition = function () {
+        // Calculate the proper location.
+        var i;
+        var xformCalculatePosition = _xform.getXform();
+        if (_otherParents.length > 0)
+            for (i in _otherParents){
+                mat4.multiply(xformCalculatePosition, _otherParents[i], xformCalculatePosition);}
+        mat4.multiply(xformCalculatePosition, _parent.getXform().getXform(), xformCalculatePosition);
+        
+        return [xformCalculatePosition[12], xformCalculatePosition[13]];
+    };
+
     self.scaleParentHeight = function (delta) {
         //_xform.setSize(x, y);
         _parent.getXform().incHeightBy(delta);
@@ -150,8 +163,22 @@ function RenderableManipulator(parent, name, shader, otherParents) {
                     parentMat: _parent.getXform().getXform()};
     };
     
+    // Check if the manipulator has been set.
+    self.isManipulatorSet = function () {
+         if (_parent === undefined)
+             return false;
+         else
+             return true;
+    };
+    
+    // Add a new block that was created to the manipulator's parent.
+    self.addNewBlockAsChild = function (newBlock) {
+        _parent.addAsChild(newBlock);
+        self.setParent(newBlock);  
+    };
+
     // Top
-    _rotateHandle.setColor([0, 0.9, 0, 1]);
+    /*_rotateHandle.setColor([0, 0.9, 0, 1]);
     var xf = _rotateHandle.getXform();
     xf.setSize(0.75, 0.75);
     xf.setPosition(0, 1.5);
@@ -170,11 +197,11 @@ function RenderableManipulator(parent, name, shader, otherParents) {
     _scaleLine.setColor([0, 0, 0, 1]);
     xf = _scaleLine.getXform();
     xf.setSize(3, 0.125);
-    xf.setPosition(0.75, 0);
+    xf.setPosition(0.75, 0);*/
     
     // Center
     _moveHandle.setColor([0.9, 0, 0, 1]);
-    xf = _moveHandle.getXform();
+   var  xf = _moveHandle.getXform();
     xf.setSize(0.75, 0.75);
     xf.setPosition(0, 0);
     
