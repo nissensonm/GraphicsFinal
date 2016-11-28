@@ -50,10 +50,17 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         ),
 
         // TODO
-        mazeStart = new Renderable(),
-        mazeFinish = new Renderable(),
+        mazeStart = new StarRenderable(drawMgr.getCircleShader()),
+        mazeFinish = new StarRenderable(drawMgr.getCircleShader()),
         player = {
-            Character: new Renderable()
+            Character: undefined,
+            Xform: undefined,
+            Moving: undefined,
+            Speed: 0.2,
+            move: function (x, y) {
+                var pos = this.Character.getXform().getPosition();
+                this.Xform.setPosition(pos[0] + x, pos[1] + y);
+            }
         };
 
     $scope.rotationSnap = 1;
@@ -64,11 +71,29 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         if (requestCanvasDraw) {
             requestCanvasDraw = false; // Reset the flag
             drawMgr.drawShapes(mainView);
+            mazeStart.draw(mainView);
+            mazeFinish.draw(mainView);
             manipulator.draw(mainView);
             if ($scope.runMode) {
+                if (player.Moving !== undefined) {
+                    console.log(player.Moving);
+                    // Oh so hacky :)
+                    if (player.Moving === "Right") {
+                        player.move(player.Speed, 0);
+                    } else if (player.Moving === "Left") {
+                        player.move(-1 * player.Speed, 0);
+                    } else if (player.Moving === "Down") {
+                        player.move(0, -1 * player.Speed);
+                    } else if (player.Moving === "Up") {
+                        player.move(0, player.Speed);
+                    } else {
+                        console.log("WHAT THE!? " + player.Moving);
+                    }
+                }
+                
                 player.Character.draw(mainView);
                 
-                if (player.Character.getXform().Contains(mazeStart.getXform().getPosition())) {
+                if (player.Character.getXform().Contains(mazeFinish.getXform().getPosition())) {
                     // Player won. End the round.
                     $scope.runMode = false;
                 }
@@ -99,40 +124,72 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         requestCanvasDraw = true;
     };
     
-<<<<<<< HEAD
     $scope.toggleRunMode = function () {
         if ($scope.runMode) {
             // Turn on run mode
             var tPos = mazeStart.getXform().getPosition();
             // Move the player to the maze entrance
-            player.getXform().setPosition(tPos[0], tPos[1]);
+            player.Character.getXform().setPosition(tPos[0], tPos[1]);
         } else {
             // Turn off run mode
         }
-=======
+    };
+
     $scope.onClientButtonPress = function($event) {
         // W = 119, A = 97, S = 115, D = 100
         if ($event.keyCode === 119){
             // W
-            // Check if the manipulator was set. If it was, draw child near it.
-            if (manipulator.isManipulatorSet())
-                $scope.drawChildNearParentWall(0, 0.50);
+            if ($scope.runMode) {
+                player.Moving = "Up";
+            } else {
+                // Check if the manipulator was set. If it was, draw child near it.
+                if (manipulator.isManipulatorSet()) {
+                    $scope.drawChildNearParentWall(0, 0.50);
+                }
+            }
         }
         else if ($event.keyCode === 97){
             // A
-            if (manipulator.isManipulatorSet())
-                $scope.drawChildNearParentWall(-0.50, 0);
+            if ($scope.runMode) {
+                player.Moving = "Left";
+            } else {
+                if (manipulator.isManipulatorSet()) {
+                    $scope.drawChildNearParentWall(-0.50, 0);
+                }
+            }
         }
         else if ($event.keyCode === 115){
             // S
-            if (manipulator.isManipulatorSet())
-                $scope.drawChildNearParentWall(0, -0.5);
+            if ($scope.runMode) {
+                player.Moving = "Down";
+            } else {
+                if (manipulator.isManipulatorSet()) {
+                    $scope.drawChildNearParentWall(0, -0.5);
+                }
+            }
             
         }
         else if ($event.keyCode === 100){
             // D
-            if (manipulator.isManipulatorSet())
-                $scope.drawChildNearParentWall(0.50, 0);
+            if ($scope.runMode) {
+                player.Moving = "Right";
+            } else {
+                if (manipulator.isManipulatorSet()) {
+                    $scope.drawChildNearParentWall(0.50, 0);
+                }
+            }
+        }
+    };
+    
+    $scope.onClientKeyUp = function ($event) {
+        
+        // W = 119, A = 97, S = 115, D = 100
+        if ($scope.runMode &&
+            ($event.which === 97 || $event.which === 100 ||
+            $event.which === 115 || $event.which === 119)) {
+            // Clear moving state
+            console.log("CLEARED MOVE STATE ==========================");
+            player.Moving = undefined;
         }
     };
     
@@ -148,10 +205,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         var newWall = new MazePiece(drawMgr.getSquareShader(), "newWallChild", position[0], position[1]);
         manipulator.addNewBlockAsChild(newWall);
 
-        
-
         requestCanvasDraw = true;
->>>>>>> origin/master
     };
 
     // Handle client mouse clicks and send to model
@@ -164,7 +218,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             // Returns a non-0 value if a collision occured with the mouse.            
             var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)),
                 mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)), manipulator);
-
 
             // If collisionSceneNode !== 0, then the scene node was returned.
             // If it is 0 then no collision occured.
@@ -207,45 +260,44 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         switch ($event.which) {
         case 1: // left
             try {
-            var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
-                pivot =  dragTargetXform.getPivot();
-                
-            if (dragging === "Scale") {
-                    // scale down by 1000 to make it feel smoother.
-                    mDelta[0] = mDelta[0] / 1000;
-                    //mDelta[1] = mDelta[1] / 1000;
-                manipulator.scaleParentWidth(mDelta[0]);
-            } else if (dragging === "Move") {
-                // Movement is relative to the pivot, but the translation won't be the same WC position...
-                manipulator.moveParent(
-                    Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap,
-                    Math.round((wcMPos[1] - pivot[1]) / $scope.moveSnap) * $scope.moveSnap
-                    );
-            } else if (dragging === "Rotate") {
-                // pivot is the point to rotate about
-                // calculate distance in x and y from the pivot point
-                var fromCenter = [wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]],
-                    // Compute the angle of the triangle made from the two sides on the last line
-                    angle = Math.atan(fromCenter[1] / fromCenter[0]) - Math.PI; // sin / cos
+                var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
+                    pivot =  dragTargetXform.getPivot();
 
-                // Domain of arctan is ( -PI/2, PI/2 ), only half of a circle...
-                if (fromCenter[0] >= 0) {
-                    angle -= Math.PI;
+                if (dragging === "Scale") {
+                        // scale down by 1000 to make it feel smoother.
+                        mDelta[0] = mDelta[0] / 1000;
+                        //mDelta[1] = mDelta[1] / 1000;
+                    manipulator.scaleParentWidth(mDelta[0]);
+                } else if (dragging === "Move") {
+                    // Movement is relative to the pivot, but the translation won't be the same WC position...
+                    manipulator.moveParent(
+                        Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap,
+                        Math.round((wcMPos[1] - pivot[1]) / $scope.moveSnap) * $scope.moveSnap
+                        );
+                } else if (dragging === "Rotate") {
+                    // pivot is the point to rotate about
+                    // calculate distance in x and y from the pivot point
+                    var fromCenter = [wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]],
+                        // Compute the angle of the triangle made from the two sides on the last line
+                        angle = Math.atan(fromCenter[1] / fromCenter[0]) - Math.PI; // sin / cos
+
+                    // Domain of arctan is ( -PI/2, PI/2 ), only half of a circle...
+                    if (fromCenter[0] >= 0) {
+                        angle -= Math.PI;
+                    }
+
+                    // Fix angle offset
+                    angle -= Math.PI / 2;
+
+                    if ($scope.rotationSnap) {
+                        var snap = parseInt($scope.rotationSnap) * Math.PI / 180;
+                        angle = Math.round(angle / snap) * snap; // round to nearest 90 degree angle, in radians
+                    }
+                    manipulator.rotateParent(angle);
                 }
-
-                // Fix angle offset
-                angle -= Math.PI / 2;
-
-                if ($scope.rotationSnap) {
-                    var snap = parseInt($scope.rotationSnap) * Math.PI / 180;
-                    angle = Math.round(angle / snap) * snap; // round to nearest 90 degree angle, in radians
-                }
-                manipulator.rotateParent(angle);
-
+                requestCanvasDraw = true;
+                break;
             }
-            requestCanvasDraw = true;
-            break;
-        }
             catch(err) {}
         }
     };
@@ -261,7 +313,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         $scope.canvasMouse.refreshBounds();
     }, 500);
     
-    // Set up hierarchy
+    // Set up demo hierarchy
     var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 0, -5);
     drawMgr.addSceneNode(piece);
     var kid = new MazePiece(drawMgr.getSquareShader(), "firstGen", 1, -3);
@@ -269,20 +321,26 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     var grandkid = new MazePiece(drawMgr.getSquareShader(), "secondGen", 2, -4);
     kid.addAsChild(grandkid);
     manipulator.setParent(piece);
-    requestCanvasDraw = true;
     
-    var aWizard = new Wizard(drawMgr.getSquareShader(), "A Powerful Wizard", 0, 0);
-    drawMgr.addSceneNode(aWizard);
+    // Build character
+    player.Character = new Wizard(drawMgr.getSquareShader(), "A Powerful Wizard", 0, 0);
+    player.Xform = player.Character.getXform();
+    drawMgr.addSceneNode(player.Character);
     var star = new Star(drawMgr.getCircleShader(), "star", -.5, 0);
-    aWizard.addAsChild(star);
+    player.Character.addAsChild(star);
     star = new Star(drawMgr.getCircleShader(), "star", .5, 0);
-    aWizard.addAsChild(star);
+    player.Character.addAsChild(star);
     star = new Star(drawMgr.getCircleShader(), "star", -.35, 1);
-    aWizard.addAsChild(star);
+    player.Character.addAsChild(star);
     star = new Star(drawMgr.getCircleShader(), "star", .35, 1);
-    aWizard.addAsChild(star);
+    player.Character.addAsChild(star);
     star = new Star(drawMgr.getCircleShader(), "star", 0, 1.25);
-    aWizard.addAsChild(star);
+    player.Character.addAsChild(star);
+    
+    mazeStart.setColor([1, 1, 1, 1]);
+    mazeStart.getXform().setPosition(-8, 4);
+    mazeFinish.setColor([0.1, 0.9, 0.1 ,1]);
+    mazeFinish.getXform().setPosition(8, -4);
     
     // Kick off update loop with initial FPS goal
     redrawUpdateTimer = $interval(update, 1000 / $scope.fpsGoal);
