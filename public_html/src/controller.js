@@ -47,7 +47,14 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             [0, 0], // wc Center
             15, // wc Wdith
             [0, 0, $scope.CANVAS_SIZE[0], $scope.CANVAS_SIZE[1]]   // viewport: left, bottom, width, height
-        );
+        ),
+
+        // TODO
+        mazeStart = new Renderable(),
+        mazeFinish = new Renderable(),
+        player = {
+            Character: new Renderable()
+        };
 
     $scope.rotationSnap = 1;
     $scope.drawMgr = drawMgr;
@@ -58,6 +65,14 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             requestCanvasDraw = false; // Reset the flag
             drawMgr.drawShapes(mainView);
             manipulator.draw(mainView);
+            if ($scope.runMode) {
+                player.Character.draw(mainView);
+                
+                if (player.Character.getXform().Contains(mazeStart.getXform().getPosition())) {
+                    // Player won. End the round.
+                    $scope.runMode = false;
+                }
+            }
         }
     }
 
@@ -84,6 +99,17 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         requestCanvasDraw = true;
     };
     
+<<<<<<< HEAD
+    $scope.toggleRunMode = function () {
+        if ($scope.runMode) {
+            // Turn on run mode
+            var tPos = mazeStart.getXform().getPosition();
+            // Move the player to the maze entrance
+            player.getXform().setPosition(tPos[0], tPos[1]);
+        } else {
+            // Turn off run mode
+        }
+=======
     $scope.onClientButtonPress = function($event) {
         if ($event.keyCode === 119){
             // W
@@ -129,6 +155,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         
 
         requestCanvasDraw = true;
+>>>>>>> origin/master
     };
 
     // Handle client mouse clicks and send to model
