@@ -14,7 +14,7 @@ function Wizard(shader, name, xPivot, yPivot) {
     this.addToSet(wizard);
     wizard.setColor([1, 1, 0, 1]); 
     xf = wizard.getXform();
-    xf.setSize(1, 1);
+    xf.setSize(1, 0.5);
     xf.setPosition(xPivot, yPivot);
 }
 gEngine.Core.inheritPrototype(Wizard, SceneNode);

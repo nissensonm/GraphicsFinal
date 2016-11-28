@@ -135,7 +135,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         }
     };
 
-    $scope.onClientButtonPress = function($event) {
+        $scope.onClientButtonPress = function($event) {
         if ($event.keyCode === 119){
             // W
             if ($scope.runMode) {
@@ -178,6 +178,13 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 }
             }
         }
+        else if ($event.keyCode === 101){
+             // E, for erase.
+             if (manipulator.isManipulatorSet())
+                 $scope.deleteSelectedObject();
+        }
+        
+        requestCanvasDraw = true;
     };
     
     $scope.onClientKeyUp = function ($event) {
@@ -330,16 +337,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     player.Character = new Wizard(drawMgr.getSquareShader(), "A Powerful Wizard", 0, 0);
     player.Xform = player.Character.getXform();
     drawMgr.addSceneNode(player.Character);
-    var star = new Star(drawMgr.getCircleShader(), "star", -.5, 0);
-    player.Character.addAsChild(star);
-    star = new Star(drawMgr.getCircleShader(), "star", .5, 0);
-    player.Character.addAsChild(star);
-    star = new Star(drawMgr.getCircleShader(), "star", -.35, 1);
-    player.Character.addAsChild(star);
-    star = new Star(drawMgr.getCircleShader(), "star", .35, 1);
-    player.Character.addAsChild(star);
-    star = new Star(drawMgr.getCircleShader(), "star", 0, 1.25);
-    player.Character.addAsChild(star);
+ //   var star = new Star(drawMgr.getCircleShader(), "star", -.5, 0);
+   // player.Character.addAsChild(star);
     
     mazeStart.setColor([1, 1, 1, 1]);
     mazeStart.getXform().setPosition(-8, 4);
