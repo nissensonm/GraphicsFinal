@@ -29,7 +29,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.collision = undefined;
 
-    $scope.rotationSnap = false;
+    $scope.moveSnap = 0.25;
+    $scope.rotationSnap = 1;
 
     // Potentially saves on canvas redraws by limiting the number of redraws
     // per second, where the update interval is determined by the constant
@@ -140,7 +141,10 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 manipulator.scaleParent(mDelta[0], mDelta[1]);
             } else if (dragging === "Move") {
                 // Movement is relative to the pivot, but the translation won't be the same WC position...
-                manipulator.moveParent(wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]);
+                manipulator.moveParent(
+                    Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap,
+                    Math.round((wcMPos[1] - pivot[1]) / $scope.moveSnap) * $scope.moveSnap
+                    );
             } else if (dragging === "Rotate") {
                 // pivot is the point to rotate about
                 // calculate distance in x and y from the pivot point
