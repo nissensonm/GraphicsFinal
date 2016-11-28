@@ -76,7 +76,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             manipulator.draw(mainView);
             if ($scope.runMode) {
                 if (player.Moving !== undefined) {
-                    console.log(player.Moving);
+                  //  console.log(player.Moving);
                     // Oh so hacky :)
                     if (player.Moving === "Right") {
                         player.move(player.Speed, 0);
@@ -130,6 +130,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             var tPos = mazeStart.getXform().getPosition();
             // Move the player to the maze entrance
             player.Character.getXform().setPosition(tPos[0], tPos[1]);
+            // Deselect any selected walls.
+            manipulator.setParent(undefined);
         } else {
             // Turn off run mode
         }
@@ -178,30 +180,30 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 }
             }
         }
-        else if ($event.keyCode === 101){
+     //   else if ($event.keyCode === 101){
              // E, for erase.
-             if (manipulator.isManipulatorSet())
-                 $scope.deleteSelectedObject();
-        }
+     //        if (manipulator.isManipulatorSet())
+      //           $scope.deleteSelectedObject();
+   //     }
         
         requestCanvasDraw = true;
     };
-    
     $scope.onClientKeyUp = function ($event) {
-        
         // W = 119, A = 97, S = 115, D = 100
+        // Keycodes on up are: 87, 65, 83, 68 for WASD respectively
         if ($scope.runMode &&
-            ($event.which === 97 || $event.which === 100 ||
-            $event.which === 115 || $event.which === 119)) {
+            ($event.keyCode === 87 || $event.keyCode === 65 ||
+            $event.keyCode === 83 || $event.keyCode === 68)) {
             // Clear moving state
             console.log("CLEARED MOVE STATE ==========================");
             player.Moving = undefined;
         }
-        else if ($event.keyCode === 101){
+        else if ($event.keyCode === 69){
             // E, for erase.
             if (manipulator.isManipulatorSet())
                 $scope.deleteSelectedObject();
         }
+        //console.log("Any key up??");
     };
     
     // Draws a new wall based on the delta passed in from the manipulator's target.
@@ -336,7 +338,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     // Build character
     player.Character = new Wizard(drawMgr.getSquareShader(), "A Powerful Wizard", 0, 0);
     player.Xform = player.Character.getXform();
-    drawMgr.addSceneNode(player.Character);
+   // drawMgr.addSceneNode(player.Character);
  //   var star = new Star(drawMgr.getCircleShader(), "star", -.5, 0);
    // player.Character.addAsChild(star);
     
