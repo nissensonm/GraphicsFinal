@@ -33,7 +33,6 @@ PivotedTransform.prototype.getXform = function () {
 
     // The matrices that WebGL uses are transposed, thus the typical matrix
     // operations must be in reverse.
-
     mat4.translate(matrix, matrix, vec3.fromValues(this.getXPos(), this.getYPos(), 0.0));
     mat4.translate(matrix, matrix, vec3.fromValues(this.getPivotXPos(), this.getPivotYPos(), 0.0));
     mat4.rotateZ(matrix, matrix, this.getRotationInRad());

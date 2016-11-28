@@ -219,6 +219,56 @@ function DrawManager(canvasId) {
         //TODO: Any update logic to do in the model?
     };
 
+    // Delete the object selected by the manipulator.
+    self.deleteScene = function(xformToDelete) {
+        var i, found = 0;
+        for (i in _sceneNodes) {
+            if (_sceneNodes[i].getXform() === xformToDelete){
+                _sceneNodes.splice(i);
+            }
+            else {
+                // Recursively check the rest of the children for the correct scene node.
+                found = self.findSceneToDeleteRecursive(xformToDelete, _sceneNodes[i]);         
+                
+                // If a 1 was returned, something was found, exit to avoid wasting time
+                // checking other children.
+                if (found === 1)
+                    return 0;
+            }
+        }
+    };
+    
+    // Check down the tree for the SN
+    self.findSceneToDeleteRecursive = function(xformToDelete, currSceneNode) {
+        var i, found = 0;
+        
+        // 
+        if (currSceneNode.getName() === "manipulator") {
+            return 0;
+        }
+        
+        for (i = 0; i < currSceneNode.sizeChildren(); i++){
+            // If a 1 was returned, something was found, exit to avoid wasting time
+            // checking other children.
+            if (found === 1)
+                return 1;
+            
+            // Test each child. If child fails then call recursion.
+            if (currSceneNode.getChildAt(i).getXform() === xformToDelete){
+                // Found node, delete it.
+                currSceneNode.removeChildByIndex(i);
+                
+                // And we're done as we found a match, return out.
+                return 1;
+            }
+            
+            // Didn't find, keep checking children.
+            found = self.findSceneToDeleteRecursive(xformToDelete, currSceneNode.getChildAt(i));         
+        }
+        return 0;
+    };
+    
+
     // Checks the manipulator object for collisions.
     self.checkManipulatorCollision = function(xPos, yPos, manipulator){
         try {
@@ -249,7 +299,7 @@ function DrawManager(canvasId) {
         mat4.multiply(rotateHandleMat, parentMat, rotateHandleMat);
         if (CollisionHelper.WithinRadius([rotateHandleMat[12], rotateHandleMat[13]],  
                                         0.40, [xPos, yPos])) {
-            return { sceneNode: manipulator, handleType: "Rotate" };
+            return { sceneNode: manipulator, handleType: "ScaleHeight" };
         }
         
         // Calculate the collision boundaries for scale handle.

@@ -77,6 +77,12 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         return dc / canvasHeight * camera.getWCHeight();
     }
 
+    $scope.deleteSelectedObject = function() {
+        drawMgr.deleteScene(manipulator.getParent());
+        manipulator.setParent(undefined);
+        requestCanvasDraw = true;
+    };
+
     // Handle client mouse clicks and send to model
     $scope.onClientMouseClick = function ($event) {
         switch ($event.which) {
@@ -136,31 +142,14 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             if (dragging === "Scale") {
                     // scale down by 1000 to make it feel smoother.
                     mDelta[0] = mDelta[0] / 1000;
-                    mDelta[1] = mDelta[1] / 1000;
-                manipulator.scaleParent(mDelta[0], mDelta[1]);
+                    //mDelta[1] = mDelta[1] / 1000;
+                manipulator.scaleParentWidth(mDelta[0]);
             } else if (dragging === "Move") {
                 // Movement is relative to the pivot, but the translation won't be the same WC position...
                 manipulator.moveParent(wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]);
-            } else if (dragging === "Rotate") {
-                // pivot is the point to rotate about
-                // calculate distance in x and y from the pivot point
-                var fromCenter = [wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]],
-                    // Compute the angle of the triangle made from the two sides on the last line
-                    angle = Math.atan(fromCenter[1] / fromCenter[0]) - Math.PI; // sin / cos
-
-                // Domain of arctan is ( -PI/2, PI/2 ), only half of a circle...
-                if (fromCenter[0] >= 0) {
-                    angle -= Math.PI;
-                }
-
-                // Fix angle offset
-                angle -= Math.PI / 2;
-
-                if ($scope.rotationSnap) {
-                    var snap = parseInt($scope.rotationSnap) * Math.PI / 180;
-                    angle = Math.round(angle / snap) * snap; // round to nearest 90 degree angle, in radians
-                }
-                manipulator.rotateParent(angle);
+            } else if (dragging === "ScaleHeight") {
+                    mDelta[1] = mDelta[1] / 1000;
+                    manipulator.scaleParentHeight(mDelta[1]);
             }
             requestCanvasDraw = true;
             break;

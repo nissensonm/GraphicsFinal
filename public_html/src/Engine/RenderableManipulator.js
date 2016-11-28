@@ -28,13 +28,12 @@ function RenderableManipulator(parent, name, shader, otherParents) {
                 var otherParents = _otherParents;
                 parentMat = _parent.getXform().getXform();
                 // Transform pivot point by parent transform
-
+                
                 var i = 0;
                 if (otherParents.length > 0)
                     for (i in otherParents)
                         mat4.multiply(parentMat, otherParents[i], parentMat);
                 mat4.multiply(parentMat, _xform.getXform(), parentMat);
-
 
                 // Calculate the proper pivot location.
                 var xformCalculatePosition = _xform.getXform();
@@ -43,9 +42,14 @@ function RenderableManipulator(parent, name, shader, otherParents) {
                         mat4.multiply(xformCalculatePosition, otherParents[i], xformCalculatePosition);}
                 mat4.multiply(xformCalculatePosition, _parent.getXform().getXform(), xformCalculatePosition);
 
+          //      for (i in parentMat)
+           //     {
+          //          console.log(i + ": " + parentMat[i]);
+          //      }
+                
 
-                parentMat[12] =  xformCalculatePosition[12];
-                parentMat[13] =  xformCalculatePosition[13];
+               parentMat[12] = xformCalculatePosition[12] ;// * parentMat[0];
+               parentMat[13] = xformCalculatePosition[13];// * parentMat[0];
             } catch(err) {}
         } else {
             parentMat = _xform.getXform();
@@ -100,9 +104,14 @@ function RenderableManipulator(parent, name, shader, otherParents) {
         }
     };
 
-    self.scaleParent = function (x, y) {
+    self.scaleParentHeight = function (delta) {
         //_xform.setSize(x, y);
-        _parent.getXform().incSizeBy(x, y);
+        _parent.getXform().incHeightBy(delta);
+    };
+    
+    self.scaleParentWidth = function (delta) {
+        //_xform.setSize(x, y);
+        _parent.getXform().incWidthBy(delta);
     };
 
     self.moveParent = function (x, y) {

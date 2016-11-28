@@ -60,6 +60,10 @@ SceneNode.prototype.removeChild= function (node) {
     if (index > -1)
         this._children.splice(index, 1);
 };
+SceneNode.prototype.removeChildByIndex= function (index) {
+    if (index > -1)
+        this._children.splice(index, 1);
+};
 SceneNode.prototype.getChildAt = function (index) {
     return this._children[index];
 };
