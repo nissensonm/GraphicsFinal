@@ -149,6 +149,17 @@ form>*, .panel>* {
     margin-bottom: 8px;
 }
 
+a.back-btn {
+    text-decoration: none;
+    font-size: 0.6em;
+    vertical-align: middle;
+}
+
+a.back-btn:hover {
+    text-decoration: none;
+    color: #9770E5;
+}
+
 .expander-btn {
     transition: background-color linear 0.1s;
     -webkit-appearance: none;
