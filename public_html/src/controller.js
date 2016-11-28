@@ -85,7 +85,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     };
     
     $scope.onClientButtonPress = function($event) {
-        // W = 119, A = 97, S = 115, D = 100
         if ($event.keyCode === 119){
             // W
             // Check if the manipulator was set. If it was, draw child near it.
@@ -107,6 +106,11 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             // D
             if (manipulator.isManipulatorSet())
                 $scope.drawChildNearParentWall(0.50, 0);
+        }
+        else if ($event.keyCode === 101){
+            // E, for erase.
+            if (manipulator.isManipulatorSet())
+                $scope.deleteSelectedObject();
         }
     };
     
