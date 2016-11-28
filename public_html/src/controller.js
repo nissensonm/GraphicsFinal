@@ -200,7 +200,12 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     kid.addAsChild(grandkid);
     manipulator.setParent(piece);
     requestCanvasDraw = true;
-
+    
+    var aWizard = new Wizard(drawMgr.getSquareShader(), "A Powerful Wizard", 0, 0);
+    drawMgr.addSceneNode(aWizard);
+    var star = new Star(drawMgr.getCircleShader(), "star", -.5, 0);
+    aWizard.addAsChild(star);
+    
     // Kick off update loop with initial FPS goal
     redrawUpdateTimer = $interval(update, 1000 / $scope.fpsGoal);
     requestCanvasDraw = true;
