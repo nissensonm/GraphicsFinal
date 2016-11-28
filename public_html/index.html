@@ -55,17 +55,36 @@ and open the template in the editor.
                             <tr>
                                 <td>
                                     <label>
-                                        Rotation snap (deg):
-                                        <input type="number" ng-model="rotationSnap" min="1" max="360" string-to-number>
+                                        <input type="checkbox" ng-model="runMode" ng-change="toggleRunMode()">
+                                        Run Mode
                                     </label>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
+                                    <label>
+                                        Rotation snap (deg):
+                                        <input type="number" ng-model="rotationSnap" min="1" max="360" string-to-number>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr ng-show="!runMode">
+                                <td>
+                                    Edit Controls
                                     <label> 
                                     Delete Selected Object
                                     <button ng-click="deleteSelectedObject()">Delete</button>
                                     </label>
+                                </td>
+                            </tr>
+                            <tr ng-show="runMode">
+                                <td>
+                                    <h3>Instructions</h3>
+                                    <ul>
+                                        <li>Use WASD to control your avatar (the wizard).</li>
+                                        <li>Find your way to the exit of the maze, the portal to eternal riches.</li>
+                                        <li>If you get stuck and need a hint, you can take a peek at the minimap. You have 3 peeks per attempt.</li>
+                                    </ul>
                                 </td>
                             </tr>
                         </table>
