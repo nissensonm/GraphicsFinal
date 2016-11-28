@@ -180,11 +180,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 }
             }
         }
-     //   else if ($event.keyCode === 101){
-             // E, for erase.
-     //        if (manipulator.isManipulatorSet())
-      //           $scope.deleteSelectedObject();
-   //     }
         
         requestCanvasDraw = true;
     };
@@ -203,7 +198,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             if (manipulator.isManipulatorSet())
                 $scope.deleteSelectedObject();
         }
-        //console.log("Any key up??");
     };
     
     // Draws a new wall based on the delta passed in from the manipulator's target.
