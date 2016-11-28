@@ -201,7 +201,7 @@ function RenderableManipulator(parent, name, shader, otherParents) {
     
     // Center
     _moveHandle.setColor([0.9, 0, 0, 1]);
-   var  xf = _moveHandle.getXform();
+    var xf = _moveHandle.getXform();
     xf.setSize(0.75, 0.75);
     xf.setPosition(0, 0);
     

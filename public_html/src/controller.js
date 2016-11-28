@@ -136,7 +136,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     };
 
     $scope.onClientButtonPress = function($event) {
-        // W = 119, A = 97, S = 115, D = 100
         if ($event.keyCode === 119){
             // W
             if ($scope.runMode) {
@@ -190,6 +189,11 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             // Clear moving state
             console.log("CLEARED MOVE STATE ==========================");
             player.Moving = undefined;
+        }
+        else if ($event.keyCode === 101){
+            // E, for erase.
+            if (manipulator.isManipulatorSet())
+                $scope.deleteSelectedObject();
         }
     };
     
