@@ -29,7 +29,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.collision = undefined;
 
-    $scope.moveSnap = 0.25;
+    $scope.moveSnap = 0.5;
     $scope.rotationSnap = 1;
 
     // Potentially saves on canvas redraws by limiting the number of redraws
@@ -249,7 +249,9 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             } else {
                 // No object is selected
                 manipulator.setParent(undefined);
-                $scope.addNewSceneNode(dragStart[0], dragStart[1]);
+                //Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap
+                $scope.addNewSceneNode(Math.round(dragStart[0] / $scope.moveSnap) * $scope.moveSnap, 
+                                       Math.round(dragStart[1] / $scope.moveSnap) * $scope.moveSnap);
             }
             break;
         case 3: // handle RMB
@@ -285,10 +287,10 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                     manipulator.scaleParentWidth(mDelta[0]);
                 } else if (dragging === "Move") {
                     // Movement is relative to the pivot, but the translation won't be the same WC position...
-                    manipulator.moveParent(
-                        Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap,
-                        Math.round((wcMPos[1] - pivot[1]) / $scope.moveSnap) * $scope.moveSnap
-                        );
+                  //  manipulator.moveParent(
+                  //      Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap,
+                  //      Math.round((wcMPos[1] - pivot[1]) / $scope.moveSnap) * $scope.moveSnap
+                    //    );
                 } else if (dragging === "Rotate") {
                     // pivot is the point to rotate about
                     // calculate distance in x and y from the pivot point
