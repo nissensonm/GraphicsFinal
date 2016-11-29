@@ -215,6 +215,13 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         requestCanvasDraw = true;
     };
 
+    // Add a new top-level scene node at the coordinates provided.
+    $scope.addNewSceneNode = function(xPos, yPos){
+        var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", xPos, yPos);
+        drawMgr.addSceneNode(piece);
+        requestCanvasDraw = true;
+    };
+
     // Handle client mouse clicks and send to model
     $scope.onClientMouseClick = function ($event) {
         switch ($event.which) {
@@ -242,6 +249,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             } else {
                 // No object is selected
                 manipulator.setParent(undefined);
+                $scope.addNewSceneNode(dragStart[0], dragStart[1]);
             }
             break;
         case 3: // handle RMB
