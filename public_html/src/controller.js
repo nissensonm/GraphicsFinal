@@ -299,6 +299,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                 // No object is selected
                 manipulator.setParent(undefined);
                 //Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap
+                if (!$scope.runMode) 
                 $scope.addNewSceneNode($scope.getSnappedValue(dragStart[0]), 
                                        $scope.getSnappedValue(dragStart[1]));
             }
@@ -380,7 +381,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     }, 500);
     
     // Set up demo hierarchy
-    var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 0 * $scope.rotationSnap, -1 * $scope.rotationSnap);
+    var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 1 * $scope.rotationSnap, 4 * $scope.rotationSnap);
     drawMgr.addSceneNode(piece);
    // var kid = new MazePiece(drawMgr.getSquareShader(), "firstGen", 1, -3);
    // piece.addAsChild(kid);
@@ -399,9 +400,9 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
    // player.Character.addAsChild(star);
     
     mazeStart.setColor([1, 1, 1, 1]);
-    mazeStart.getXform().setPosition(-8, 4);
+    mazeStart.getXform().setPosition(-6.5, 4.5);
     mazeFinish.setColor([0.1, 0.9, 0.1 ,1]);
-    mazeFinish.getXform().setPosition(8, -4);
+    mazeFinish.getXform().setPosition(6.5, -4.5);
     
     // Kick off update loop with initial FPS goal
     redrawUpdateTimer = $interval(update, 1000 / $scope.fpsGoal);

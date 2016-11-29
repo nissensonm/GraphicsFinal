@@ -63,21 +63,22 @@ and open the template in the editor.
                                     </label>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <label>
-                                        Rotation snap (deg):
-                                        <input type="number" ng-model="rotationSnap" min="1" max="360" string-to-number>
-                                    </label>
-                                </td>
-                            </tr>
                             <tr ng-show="!runMode">
                                 <td>
-                                    Edit Controls
+                                    Edit Controls: <br>
                                     <label> 
                                     Delete Selected Object
                                     <button ng-click="deleteSelectedObject()">Delete</button>
                                     </label>
+                                    <h3>Instructions</h3>
+                                    <ul>
+                                        <li>Select an existing wall by clicking on it.</li>
+                                        <li>Create a new wall by clicking an empty space.</li>
+                                        <li>Extend walls by clicking on an existing wall, then use WASD to make new walls in the direction specified.</li>
+                                        <li>Delete a wall by pressing (and releasing) the E key.</li>
+                                        <li>To delete a whole section of wall, click a previous block in your wall and press the E key to delete the whole chain.</li>
+                                        <li>The wizard will start on the white star and finish on the green star.</li>
+                                    </ul>
                                 </td>
                             </tr>
                             <tr ng-show="runMode">
