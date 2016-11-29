@@ -206,6 +206,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         } else {
             // Turn off run mode
         }
+        requestCanvasDraw = true;
     };
 
     $scope.onClientButtonPress = function($event) {
