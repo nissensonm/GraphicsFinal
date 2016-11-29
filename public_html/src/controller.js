@@ -31,6 +31,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     $scope.moveSnap = 0.5;
     $scope.rotationSnap = 1;
+    $scope.drawMgr = drawMgr;
+
 
     // Potentially saves on canvas redraws by limiting the number of redraws
     // per second, where the update interval is determined by the constant
@@ -62,9 +64,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 this.Xform.setPosition(pos[0] + x, pos[1] + y);
             }
         };
-
-    $scope.rotationSnap = 1;
-    $scope.drawMgr = drawMgr;
 
     // Fired by redrawUpdateTimer. Controller-side update logic goes here.
     function update() {
@@ -106,7 +105,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         var shift = Math.pow(10, decimals);
         return Math.round(num * shift) / shift;
     }
-
+    
     // These utilities convert device coordinates (px) to WC
     function dcToWc(canvasSize, dc, camera) {
         return [dc[0] / canvasSize[0] * camera.getWCWidth(), dc[1] / canvasSize[1] * camera.getWCHeight()];
@@ -118,6 +117,78 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         return dc / canvasHeight * camera.getWCHeight();
     }
 
+        
+/*   Camera.prototype.getWCCenter = function () { return this.mWCCenter; };
+Camera.prototype.setWCWidth = function (width) { this.mWCWidth = width; };
+Camera.prototype.getWCWidth = function () { return parseInt(this.mWCWidth); };
+Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mViewport[3] / this.mViewport[2]; };*/
+        
+//    $scope.addNewSceneNode(Math.round(dragStart[0] / $scope.moveSnap) * $scope.moveSnap, 
+//                                       Math.round(dragStart[1] / $scope.moveSnap) * $scope.moveSnap);
+       
+    // Used to find the snapped value.
+    $scope.getSnappedValue = function(val){
+        return Math.round(val / $scope.moveSnap) * $scope.moveSnap;
+    };
+    
+    // Draw the borders around the map.
+    $scope.createBorders = function(){
+        var center = mainView.getWCCenter();
+        var height = mainView.getWCHeight();
+        var width = mainView.getWCWidth();
+        console.log("C / W / H: " + center + " " + width + " " + height);
+        var bottomLeftCorner = [$scope.getSnappedValue(center[0] - (width / 2)), 
+                                $scope.getSnappedValue(center[1] - (height / 2))];
+        var bottomRightCorner = [$scope.getSnappedValue(center[0] + (width / 2)), 
+                                $scope.getSnappedValue(center[1] - (height / 2))];
+        var topRightCorner = [$scope.getSnappedValue(center[0] + (width / 2)), 
+                                $scope.getSnappedValue(center[1] + (height / 2))];
+        var topLeftCorner = [$scope.getSnappedValue(center[0] - (width / 2)), 
+                                $scope.getSnappedValue(center[1] + (height / 2))];
+
+        $scope.addNewSceneNode(bottomLeftCorner[0], bottomLeftCorner[1], "doNotDelete");
+        $scope.addNewSceneNode(bottomRightCorner[0], bottomRightCorner[1], "doNotDelete");
+        $scope.addNewSceneNode(topLeftCorner[0], topLeftCorner[1], "doNotDelete");
+        $scope.addNewSceneNode(topRightCorner[0], topRightCorner[1], "doNotDelete");
+        
+        // Draw walls from corner to corner. 
+        while (bottomLeftCorner[0] < bottomRightCorner[0])
+            $scope.addNewSceneNode(bottomLeftCorner[0] += $scope.moveSnap, bottomLeftCorner[1], "doNotDelete");
+        while (bottomRightCorner[1] < topRightCorner[1])
+            $scope.addNewSceneNode(bottomRightCorner[0], bottomRightCorner[1] += $scope.moveSnap, "doNotDelete");
+        while (topRightCorner[0] > topLeftCorner[0])
+            $scope.addNewSceneNode(topRightCorner[0] -= $scope.moveSnap, topRightCorner[1], "doNotDelete");
+        while (topLeftCorner[1] > bottomLeftCorner[1])
+            $scope.addNewSceneNode(topLeftCorner[0], topLeftCorner[1] -= $scope.moveSnap, "doNotDelete");
+        //console.log(bottomLeftCorner[0] + " " + bottomLeftCorner[1]);
+    };
+        
+    // Draws a new wall based on the delta passed in from the manipulator's target.
+    $scope.drawChildNearParentWall = function(xDelta, yDelta) {
+        // Get manipulator's current position.
+        var position = manipulator.getParentPosition();
+        // Adjust position with delta.
+        var position = [position[0] + xDelta, position[1] + yDelta];
+        //console.log("Piv: " + position[0] + ", " + position[1]);
+        
+        // Create new wall, have manipulator pass it to its parent and add it.
+        var newWall = new MazePiece(drawMgr.getSquareShader(), "newWallChild", position[0], position[1]);
+        manipulator.addNewBlockAsChild(newWall);
+
+        requestCanvasDraw = true;
+    };
+
+    // Add a new top-level scene node at the coordinates provided.
+    $scope.addNewSceneNode = function(xPos, yPos, name){
+        // Name is an optional parameter. If it wasn't passed in, set it to zeroGen.
+        name = name || "zeroGen";
+        // Create new maze piece and add it to the scene node list.
+        var piece = new MazePiece(drawMgr.getSquareShader(), name, xPos, yPos);
+        drawMgr.addSceneNode(piece);
+        requestCanvasDraw = true;
+    };
+
+    // Delete the object selected by the manipulator.
     $scope.deleteSelectedObject = function() {
         drawMgr.deleteScene(manipulator.getParent());
         manipulator.setParent(undefined);
@@ -137,7 +208,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         }
     };
 
-        $scope.onClientButtonPress = function($event) {
+    $scope.onClientButtonPress = function($event) {
         if ($event.keyCode === 119){
             // W
             if ($scope.runMode) {
@@ -145,7 +216,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             } else {
                 // Check if the manipulator was set. If it was, draw child near it.
                 if (manipulator.isManipulatorSet()) {
-                    $scope.drawChildNearParentWall(0, 0.50);
+                    $scope.drawChildNearParentWall(0, $scope.moveSnap);
                 }
             }
         }
@@ -155,7 +226,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 player.Moving = "Left";
             } else {
                 if (manipulator.isManipulatorSet()) {
-                    $scope.drawChildNearParentWall(-0.50, 0);
+                    $scope.drawChildNearParentWall(-$scope.moveSnap, 0);
                 }
             }
         }
@@ -165,7 +236,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 player.Moving = "Down";
             } else {
                 if (manipulator.isManipulatorSet()) {
-                    $scope.drawChildNearParentWall(0, -0.5);
+                    $scope.drawChildNearParentWall(0, -$scope.moveSnap);
                 }
             }
             
@@ -176,7 +247,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 player.Moving = "Right";
             } else {
                 if (manipulator.isManipulatorSet()) {
-                    $scope.drawChildNearParentWall(0.50, 0);
+                    $scope.drawChildNearParentWall($scope.moveSnap, 0);
                 }
             }
         }
@@ -198,28 +269,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             if (manipulator.isManipulatorSet())
                 $scope.deleteSelectedObject();
         }
-    };
-    
-    // Draws a new wall based on the delta passed in from the manipulator's target.
-    $scope.drawChildNearParentWall = function(xDelta, yDelta) {
-        // Get manipulator's current position.
-        var position = manipulator.getParentPosition();
-        // Adjust position with delta.
-        var position = [position[0] + xDelta, position[1] + yDelta];
-        //console.log("Piv: " + position[0] + ", " + position[1]);
-        
-        // Create new wall, have manipulator pass it to its parent and add it.
-        var newWall = new MazePiece(drawMgr.getSquareShader(), "newWallChild", position[0], position[1]);
-        manipulator.addNewBlockAsChild(newWall);
-
-        requestCanvasDraw = true;
-    };
-
-    // Add a new top-level scene node at the coordinates provided.
-    $scope.addNewSceneNode = function(xPos, yPos){
-        var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", xPos, yPos);
-        drawMgr.addSceneNode(piece);
-        requestCanvasDraw = true;
     };
 
     // Handle client mouse clicks and send to model
@@ -250,8 +299,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 // No object is selected
                 manipulator.setParent(undefined);
                 //Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap
-                $scope.addNewSceneNode(Math.round(dragStart[0] / $scope.moveSnap) * $scope.moveSnap, 
-                                       Math.round(dragStart[1] / $scope.moveSnap) * $scope.moveSnap);
+                $scope.addNewSceneNode($scope.getSnappedValue(dragStart[0]), 
+                                       $scope.getSnappedValue(dragStart[1]));
             }
             break;
         case 3: // handle RMB
@@ -331,13 +380,16 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     }, 500);
     
     // Set up demo hierarchy
-    var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 0, -5);
+    var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 0 * $scope.rotationSnap, -1 * $scope.rotationSnap);
     drawMgr.addSceneNode(piece);
-    var kid = new MazePiece(drawMgr.getSquareShader(), "firstGen", 1, -3);
-    piece.addAsChild(kid);
-    var grandkid = new MazePiece(drawMgr.getSquareShader(), "secondGen", 2, -4);
-    kid.addAsChild(grandkid);
+   // var kid = new MazePiece(drawMgr.getSquareShader(), "firstGen", 1, -3);
+   // piece.addAsChild(kid);
+  //  var grandkid = new MazePiece(drawMgr.getSquareShader(), "secondGen", 2, -4);
+  //  kid.addAsChild(grandkid);
     manipulator.setParent(piece);
+    
+    // Draw borders
+    $scope.createBorders();
     
     // Build character
     player.Character = new Wizard(drawMgr.getSquareShader(), "A Powerful Wizard", 0, 0);

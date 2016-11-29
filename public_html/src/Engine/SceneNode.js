@@ -85,12 +85,12 @@ SceneNode.prototype.draw = function (cam, parentMat) {
     }
     
     // for debugging, let's draw the pivot position
-    if (this._pivotPos !== null) {
+   /* if (this._pivotPos !== null) {
         var pxf = this.getXform();
         var t = pxf.getPosition();
         var p = pxf.getPivot();
         var xf = this._pivotPos.getXform();
         xf.setPosition(p[0] + t[0], p[1] + t[1]);
         this._pivotPos.draw(cam, parentMat);
-    }
+    }*/
 };

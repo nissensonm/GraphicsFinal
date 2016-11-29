@@ -12,7 +12,7 @@ function MazePiece(shader, name, xPivot, yPivot) {
 
     var piece = new SquareRenderable(shader);
     this.addToSet(piece);
-    piece.setColor([1, 0, 0, 1]); // red
+    piece.setColor([0, 0, 0, 1]); // red
     xf = piece.getXform();
     xf.setSize(1, 1);
     xf.setPosition(xPivot, yPivot);
