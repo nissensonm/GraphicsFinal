@@ -58,8 +58,9 @@ and open the template in the editor.
                             <tr>
                                 <td>
                                     <label>
-                                        <input type="checkbox" ng-model="runMode" ng-change="toggleRunMode()">
-                                        Run Mode
+                                        <button ng-click="toggleRunMode()">
+                                            {{runMode ? "Edit Mode" : "Run Mode"}}
+                                        </button>
                                     </label>
                                 </td>
                             </tr>
@@ -88,6 +89,16 @@ and open the template in the editor.
                                         <li>Use WASD to control your avatar (the wizard).</li>
                                         <li>Find your way to the exit of the maze, the portal to eternal riches.</li>
                                         <li>If you get stuck and need a hint, you can take a peek at the minimap. You have 3 peeks per attempt.</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h3>Game Statistics</h3>
+                                    <ul>
+                                        <li>{{runMode ? "Current" : "Last"}} Elapsed Time: {{elapsedTime}} seconds</li>
+                                        <li>Fastest Win Time: {{fastestTime}} seconds</li>
+                                        <li>Times Won: {{timesWon}}</li>
                                     </ul>
                                 </td>
                             </tr>

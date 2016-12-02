@@ -32,7 +32,11 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     $scope.moveSnap = 0.5;
     $scope.rotationSnap = 1;
     $scope.drawMgr = drawMgr;
+    $scope.runMode = false;
 
+    $scope.elapsedTime = 0;
+    $scope.fastestTime = 99999999999;
+    $scope.timesWon = 0;
 
     // Potentially saves on canvas redraws by limiting the number of redraws
     // per second, where the update interval is determined by the constant
@@ -63,10 +67,15 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 var pos = this.Character.getXform().getPosition();
                 this.Xform.setPosition(pos[0] + x, pos[1] + y);
             }
-        };
+        },
+        
+        startTime = 0; // time the player started the maze
 
     // Fired by redrawUpdateTimer. Controller-side update logic goes here.
     function update() {
+        if ($scope.runMode) {
+            $scope.elapsedTime = (Date.now() - startTime) / 1000;
+        }
         if (requestCanvasDraw) {
             requestCanvasDraw = false; // Reset the flag
             drawMgr.drawShapes(mainView);
@@ -94,7 +103,11 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 
                 if (player.Character.getXform().Contains(mazeFinish.getXform().getPosition())) {
                     // Player won. End the round.
-                    $scope.runMode = false;
+                    $scope.toggleRunMode();
+                    if ($scope.elapsedTime < $scope.fastestTime) {
+                        $scope.fastestTime = $scope.elapsedTime;
+                    }
+                    $scope.timesWon++;
                 }
             }
         }
@@ -196,11 +209,13 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     };
     
     $scope.toggleRunMode = function () {
+        $scope.runMode = !$scope.runMode;
         if ($scope.runMode) {
             // Turn on run mode
             var tPos = mazeStart.getXform().getPosition();
             // Move the player to the maze entrance
             player.Character.getXform().setPosition(tPos[0], tPos[1]);
+            startTime = Date.now();
             // Deselect any selected walls.
             manipulator.setParent(undefined);
         } else {
@@ -262,7 +277,6 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
             ($event.keyCode === 87 || $event.keyCode === 65 ||
             $event.keyCode === 83 || $event.keyCode === 68)) {
             // Clear moving state
-            console.log("CLEARED MOVE STATE ==========================");
             player.Moving = undefined;
         }
         else if ($event.keyCode === 69){
