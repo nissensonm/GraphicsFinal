@@ -40,12 +40,13 @@ function DrawManager(canvasId) {
         _renderedShapes = [],
         _sceneNodes = [],
         _shapeInfo = [],
-        _selectedShape = null,
-        _selectedShapeIndex = 0;
+        _selectedShape = undefined,
+        _selectedShapeIndex = 0,
+        _selectedSceneNode = undefined;
 
     self.removeAllShapes = function () {
         _renderedShapes = [];
-        _selectedShape = null;
+        _selectedShape = undefined;
     };
 
     self.drawShapes = function (camera) {
@@ -103,6 +104,17 @@ function DrawManager(canvasId) {
         } else {
             console.log("Tried to select shape out of bounds with index " + index);
         }
+    };
+    
+    self.selectSceneNode = function (node, color) {
+        if (_selectedSceneNode) {
+            _selectedSceneNode.unHighlight(true);
+            if (node === undefined) {
+                return;
+            }
+        }
+        _selectedSceneNode = node;
+        _selectedSceneNode.highlight(color || [1, 0.1, 0.1, 1], true);
     };
 
     self.addShapeToCanvas = function (shapeType) {
@@ -223,7 +235,10 @@ function DrawManager(canvasId) {
     self.deleteScene = function(xformToDelete) {
         var i, found = 0;
         for (i in _sceneNodes) {
-            if (_sceneNodes[i].getXform() === xformToDelete){
+            if (_sceneNodes[i].getXform() === xformToDelete) {
+                if (_sceneNodes[i] === _selectedSceneNode) {
+                    self.selectSceneNode(undefined); // clear selection before deleting
+                }
                 _sceneNodes.splice(i);
             }
             else {

@@ -189,6 +189,8 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         manipulator.addNewBlockAsChild(newWall);
 
         requestCanvasDraw = true;
+        
+        return newWall;
     };
 
     // Add a new top-level scene node at the coordinates provided.
@@ -225,6 +227,8 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     };
 
     $scope.onClientButtonPress = function($event) {
+        var newBlock = undefined;
+        
         if ($event.keyCode === 119){
             // W
             if ($scope.runMode) {
@@ -232,7 +236,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
             } else {
                 // Check if the manipulator was set. If it was, draw child near it.
                 if (manipulator.isManipulatorSet()) {
-                    $scope.drawChildNearParentWall(0, $scope.moveSnap);
+                    newBlock = $scope.drawChildNearParentWall(0, $scope.moveSnap);
                 }
             }
         }
@@ -242,7 +246,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                 player.Moving = "Left";
             } else {
                 if (manipulator.isManipulatorSet()) {
-                    $scope.drawChildNearParentWall(-$scope.moveSnap, 0);
+                    newBlock = $scope.drawChildNearParentWall(-$scope.moveSnap, 0);
                 }
             }
         }
@@ -252,7 +256,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                 player.Moving = "Down";
             } else {
                 if (manipulator.isManipulatorSet()) {
-                    $scope.drawChildNearParentWall(0, -$scope.moveSnap);
+                    newBlock = $scope.drawChildNearParentWall(0, -$scope.moveSnap);
                 }
             }
             
@@ -263,9 +267,13 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                 player.Moving = "Right";
             } else {
                 if (manipulator.isManipulatorSet()) {
-                    $scope.drawChildNearParentWall($scope.moveSnap, 0);
+                    newBlock = $scope.drawChildNearParentWall($scope.moveSnap, 0);
                 }
             }
+        }
+        
+        if (newBlock) {
+            drawMgr.selectSceneNode(newBlock);
         }
         
         requestCanvasDraw = true;
@@ -281,8 +289,9 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         }
         else if ($event.keyCode === 69){
             // E, for erase.
-            if (manipulator.isManipulatorSet())
+            if (manipulator.isManipulatorSet()) {
                 $scope.deleteSelectedObject();
+            }
         }
     };
 
@@ -308,7 +317,8 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                     dragTargetXform = collisionSceneNode.sceneNode.getXform();
                 } else {
                     manipulator.setOtherParents(collisionSceneNode.wallMat);
-                    manipulator.setParent(collisionSceneNode.sceneNode);    
+                    manipulator.setParent(collisionSceneNode.sceneNode);
+                    drawMgr.selectSceneNode(collisionSceneNode.sceneNode);
                 }
             } else {
                 // No object is selected

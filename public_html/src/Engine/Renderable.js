@@ -15,6 +15,7 @@ function Renderable(shader) {
     this.mShader = shader;         // the shader for shading this object
     this.mXform = new Transform(); // transform that moves this object around
     this.mColor = [1, 1, 1, 1];    // color of pixel
+    this._defColor = [1, 1, 1, 1];
 }
 
 Renderable.prototype.update = function () {};
@@ -35,5 +36,12 @@ Renderable.prototype.getXform = function () { return this.mXform; };
 Renderable.prototype.setColor = function (color) { this.mColor = color; };
 Renderable.prototype.getColor = function () { return this.mColor; };
 Renderable.prototype.getVelocity = function () { return this.mVelocity; };
+
+Renderable.prototype.setDefaultColor = function (color) {
+    this._defColor = color;
+};
+Renderable.prototype.getDefaultColor = function () {
+    return this._defColor;
+};
 //--- end of Public Methods
 //</editor-fold>
