@@ -361,7 +361,7 @@ function DrawManager(canvasId) {
                 mat4.multiply(wallMat, snMat, wallMat);
 
                 if(CollisionHelper.WithinRadius([wallMat[12], wallMat[13]],  
-                                        0.40, [xPos, yPos])){
+                                        0.35, [xPos, yPos])){
                     //return _sceneNodes[x];
                     var sceneAndObject = { sceneNode: _sceneNodes[x], renderableObj: currRenderable };
                     return sceneAndObject;
@@ -432,7 +432,7 @@ function DrawManager(canvasId) {
 
             // If collision detected, return scene node, currRenderable, and parent mats. 
             if(CollisionHelper.WithinRadius([wallMat[12], wallMat[13]],  
-                                        0.40, [xPos, yPos])){
+                                        0.35, [xPos, yPos])){
                 var sceneAndObject = { sceneNode: currSceneNode, wallObject: currRenderable, wallMat: snMats };
                 return sceneAndObject;
             }

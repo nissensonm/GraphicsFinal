@@ -65,7 +65,9 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             Speed: 0.2,
             move: function (x, y) {
                 var pos = this.Character.getXform().getPosition();
-                this.Xform.setPosition(pos[0] + x, pos[1] + y);
+                // Check if collision is occuring. If anything other than 0 is returned, a collision occured.
+                if (drawMgr.checkCollision(pos[0] + x, pos[1] + y, manipulator) === 0)
+                    this.Xform.setPosition(pos[0] + x, pos[1] + y);
             }
         },
         
