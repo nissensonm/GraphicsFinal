@@ -109,9 +109,9 @@ function DrawManager(canvasId) {
     self.selectSceneNode = function (node, color) {
         if (_selectedSceneNode) {
             _selectedSceneNode.unHighlight(true);
-            if (node === undefined) {
-                return;
-            }
+        }
+        if (node === undefined) {
+            return;
         }
         _selectedSceneNode = node;
         _selectedSceneNode.highlight(color || [1, 0.1, 0.1, 1], true);

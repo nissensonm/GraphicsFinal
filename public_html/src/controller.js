@@ -33,6 +33,9 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     $scope.rotationSnap = 1;
     $scope.drawMgr = drawMgr;
     $scope.runMode = false;
+    $scope.hint = false;
+    $scope.hintsRemaining = 3;
+    $scope.hintTime = 0;
 
     $scope.elapsedTime = 0;
     $scope.fastestTime = 99999999999;
@@ -51,18 +54,29 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         manipulator = new RenderableManipulator(undefined, "manipulator", drawMgr.getSquareShader()),
         mainView = new Camera(
             [0, 0], // wc Center
-            15, // wc Wdith
+            15, // wc Width
             [0, 0, $scope.CANVAS_SIZE[0], $scope.CANVAS_SIZE[1]]   // viewport: left, bottom, width, height
         ),
+        hintView = new Camera(
+            [0, 0], // wc Center
+            15, // wc Width
+            [$scope.CANVAS_SIZE[0] * 0.75, $scope.CANVAS_SIZE[1] * 0.75, 
+             $scope.CANVAS_SIZE[0] * 0.25, $scope.CANVAS_SIZE[1] * 0.25]   // viewport: left, bottom, width, height
+        ),
+        hintViewBox = new SquareArea( // shader pos size thiccness
+            drawMgr.getSquareShader(),
+            [$scope.CANVAS_SIZE[0] * 0.75, $scope.CANVAS_SIZE[1] * 0.75],
+            [$scope.CANVAS_SIZE[0] * 0.25, $scope.CANVAS_SIZE[1] * 0.25],
+            0.25
+        ),
 
-        // TODO
         mazeStart = new StarRenderable(drawMgr.getCircleShader()),
         mazeFinish = new StarRenderable(drawMgr.getCircleShader()),
         player = {
             Character: undefined,
             Xform: undefined,
             Moving: undefined,
-            Speed: 0.2,
+            Speed: 0.02,
             move: function (x, y) {
                 var pos = this.Character.getXform().getPosition();
                 // Check if collision is occuring. If anything other than 0 is returned, a collision occured.
@@ -75,43 +89,75 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     // Fired by redrawUpdateTimer. Controller-side update logic goes here.
     function update() {
+        //console.log('UPDATE ' + Date.now());
+
         if ($scope.runMode) {
             $scope.elapsedTime = (Date.now() - startTime) / 1000;
-        }
-        if (requestCanvasDraw) {
-            requestCanvasDraw = false; // Reset the flag
-            drawMgr.drawShapes(mainView);
-            mazeStart.draw(mainView);
-            mazeFinish.draw(mainView);
-            manipulator.draw(mainView);
-            if ($scope.runMode) {
-                if (player.Moving !== undefined) {
-                  //  console.log(player.Moving);
-                    // Oh so hacky :)
-                    if (player.Moving === "Right") {
-                        player.move(player.Speed, 0);
-                    } else if (player.Moving === "Left") {
-                        player.move(-1 * player.Speed, 0);
-                    } else if (player.Moving === "Down") {
-                        player.move(0, -1 * player.Speed);
-                    } else if (player.Moving === "Up") {
-                        player.move(0, player.Speed);
-                    } else {
-                        console.log("WHAT THE!? " + player.Moving);
-                    }
-                }
-                
-                player.Character.draw(mainView);
-                
-                if (player.Character.getXform().Contains(mazeFinish.getXform().getPosition())) {
-                    // Player won. End the round.
-                    $scope.toggleRunMode();
-                    if ($scope.elapsedTime < $scope.fastestTime) {
-                        $scope.fastestTime = $scope.elapsedTime;
-                    }
-                    $scope.timesWon++;
-                }
+            // 3 seconds of hint time per hint
+            if ($scope.hint && Date.now() - $scope.hintTime > 3000) {
+                $scope.hint = false;
+                $scope.hintTime = 0;
+                requestCanvasDraw = true;
             }
+
+            var ppos = player.Xform.getPosition();
+            mainView.setWCCenter(ppos[0], ppos[1]);
+
+            if (player.Moving !== undefined) {
+                console.log(player.Moving);
+                // Oh so hacky :)
+                if (player.Moving === "Right") {
+                    player.move(player.Speed, 0);
+                } else if (player.Moving === "Left") {
+                    player.move(-1 * player.Speed, 0);
+                } else if (player.Moving === "Down") {
+                    player.move(0, -1 * player.Speed);
+                } else if (player.Moving === "Up") {
+                    player.move(0, player.Speed);
+                } else {
+                    console.log("WHAT THE!? " + player.Moving);
+                }
+                requestCanvasDraw = true;
+            }
+
+            if (player.Character.getXform().Contains(mazeFinish.getXform().getPosition())) {
+                // Player won. End the round.
+                $scope.toggleRunMode();
+                if ($scope.elapsedTime < $scope.fastestTime) {
+                    $scope.fastestTime = $scope.elapsedTime;
+                }
+                $scope.timesWon++;
+                requestCanvasDraw = true;
+            }
+        }
+    }
+
+    // Fired by redrawUpdateTimer. Controller-side draw logic goes here.
+    // Only does anything if requestCanvasDraw flag is set to true, indicating
+    // the next frame needs to be redrawn.
+    function draw() {
+        if (!requestCanvasDraw) {
+            return;
+        }
+        requestCanvasDraw = false; // clear flag
+        
+        console.log('DRAW ' + Date.now());
+        
+        drawMgr.drawShapes(mainView);
+        mazeStart.draw(mainView);
+        mazeFinish.draw(mainView);
+        
+        if ($scope.runMode) {
+            player.Character.draw(mainView);
+            // Draw maze to the hint view
+            if ($scope.hint) {
+                drawMgr.drawShapes(hintView);
+                mazeStart.draw(hintView);
+                mazeFinish.draw(hintView);
+                hintViewBox.draw(mainView);
+            }
+        } else {
+            manipulator.draw(mainView);
         }
     }
 
@@ -219,16 +265,34 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
             var tPos = mazeStart.getXform().getPosition();
             // Move the player to the maze entrance
             player.Character.getXform().setPosition(tPos[0], tPos[1]);
+            $scope.hintsRemaining = 3; // reset available hints for the player
             startTime = Date.now();
+            // Zoom in on the character
+            mainView.setWCWidth(4);
             // Deselect any selected walls.
             manipulator.setParent(undefined);
+            drawMgr.selectSceneNode(undefined);
         } else {
+            // Zoom back out to the full view
+            mainView.setWCWidth(15);
+            mainView.setWCCenter(0, 0);
             // Turn off run mode
         }
         requestCanvasDraw = true;
     };
+    
+    $scope.giveHint = function () {
+        if ($scope.hintsRemaining < 1) {
+            return;
+        } else {
+            $scope.hintsRemaining--;
+            $scope.hint = true;
+            $scope.hintTime = Date.now();
+            requestCanvasDraw = true;
+        }
+    };
 
-    $scope.onClientButtonPress = function($event) {
+    $scope.onClientButtonPress = function ($event) {
         var newBlock = undefined;
         
         if ($event.keyCode === 119){
@@ -432,6 +496,9 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     mazeFinish.getXform().setPosition(6.5, -4.5);
     
     // Kick off update loop with initial FPS goal
-    redrawUpdateTimer = $interval(update, 1000 / $scope.fpsGoal);
+    redrawUpdateTimer = $interval(function () {
+        update();
+        draw();
+    }, 1000 / $scope.fpsGoal);
     requestCanvasDraw = true;
 }]);

@@ -73,11 +73,16 @@ and open the template in the editor.
                                     </label>
                                     <h3>Instructions</h3>
                                     <ul>
-                                        <li>Select an existing wall by clicking on it.</li>
+                                        <li>Select an existing wall by clicking on it. It will become white.</li>
                                         <li>Create a new wall by clicking an empty space.</li>
-                                        <li>Extend walls by clicking on an existing wall, then use WASD to make new walls in the direction specified.</li>
+                                        <li>Extend walls by clicking on an existing wall, then use WASD 
+                                            (up, left, down, right, respectively) to make new walls in the direction specified.
+                                        </li>
                                         <li>Delete a wall by pressing (and releasing) the E key.</li>
-                                        <li>To delete a whole section of wall, click a previous block in your wall and press the E key to delete the whole chain.</li>
+                                        <li>To delete a whole section of wall, click a previous 
+                                            block in your wall and press the E key to delete the whole chain. 
+                                            Children of the selected block will be highlighted in red.
+                                        </li>
                                         <li>The wizard will start on the white star and finish on the green star.</li>
                                     </ul>
                                 </td>
@@ -88,8 +93,15 @@ and open the template in the editor.
                                     <ul>
                                         <li>Use WASD to control your avatar (the wizard).</li>
                                         <li>Find your way to the exit of the maze, the portal to eternal riches.</li>
-                                        <li>If you get stuck and need a hint, you can take a peek at the minimap. You have 3 peeks per attempt.</li>
+                                        <li>
+                                            If you get stuck and need a hint, you can take a peek at the maze layout 
+                                            for a few seconds. You have 3 peeks per attempt. Click the hint button below.
+                                        </li>
                                     </ul>
+                                    
+                                    <button ng-click="giveHint()">
+                                        Get Hint ({{hintsRemaining}} remaining)
+                                    </button>
                                 </td>
                             </tr>
                             <tr>
