@@ -236,10 +236,12 @@ function DrawManager(canvasId) {
         var i, found = 0;
         for (i in _sceneNodes) {
             if (_sceneNodes[i].getXform() === xformToDelete) {
-                if (_sceneNodes[i] === _selectedSceneNode) {
-                    self.selectSceneNode(undefined); // clear selection before deleting
-                }
-                _sceneNodes.splice(i);
+                if (_sceneNodes[i].getName() !== "doNotDelete"){
+                    if (_sceneNodes[i] === _selectedSceneNode) {
+                        self.selectSceneNode(undefined); // clear selection before deleting
+                    }
+                    _sceneNodes.splice(i);
+            }
             }
             else {
                 // Recursively check the rest of the children for the correct scene node.

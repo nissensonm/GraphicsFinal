@@ -477,7 +477,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     }, 500);
     
     // Set up demo hierarchy
-    var piece = new MazePiece(drawMgr.getSquareShader(), "zeroGen", 1 * $scope.rotationSnap, 4 * $scope.rotationSnap);
+    var piece = new MazePiece(drawMgr.getSquareShader(), "doNotDelete", mainView.getWCCenter(), mainView.getWCHeight());
     drawMgr.addSceneNode(piece);
    // var kid = new MazePiece(drawMgr.getSquareShader(), "firstGen", 1, -3);
    // piece.addAsChild(kid);
