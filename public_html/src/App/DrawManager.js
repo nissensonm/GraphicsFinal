@@ -129,7 +129,6 @@ function DrawManager(canvasId) {
         // Put new shape in array of all shapes on the canvas
         _selectedShapeIndex = _renderedShapes.length;
         _renderedShapes[_renderedShapes.length] = _selectedShape;
-        //PublicInstance.drawShapes();
     };
 
     self.removeShape = function (index) {
@@ -232,7 +231,7 @@ function DrawManager(canvasId) {
 
     // Runs an update loop and returns how many, if any, shapes were removed
     self.update = function () {
-        //TODO: Any update logic to do in the model?
+
     };
 
     // Delete the object selected by the manipulator.
@@ -315,30 +314,6 @@ function DrawManager(canvasId) {
             return { sceneNode: manipulator, handleType: "Move" };
         }
         
-        // Older unused code, likely safe to delete.
-        /*// Calculate the collision boundaries for rotation handle.
-        var rotateHandleMat = manipulatorXforms.rotateHandle.getXform().getXform();
-        if (otherParents.length > 0)
-            for (i in otherParents){
-                mat4.multiply(rotateHandleMat, otherParents[i], rotateHandleMat);}
-        mat4.multiply(rotateHandleMat, xFormWithPiv, rotateHandleMat);
-        mat4.multiply(rotateHandleMat, parentMat, rotateHandleMat);
-        if (CollisionHelper.WithinRadius([rotateHandleMat[12], rotateHandleMat[13]],  
-                                        0.40, [xPos, yPos])) {
-            return { sceneNode: manipulator, handleType: "ScaleHeight" };
-        }
-        
-        // Calculate the collision boundaries for scale handle.
-        var scaleHandleMat = manipulatorXforms.scaleHandle.getXform().getXform();
-        if (otherParents.length > 0)
-            for (i in otherParents){
-                mat4.multiply(scaleHandleMat, otherParents[i], scaleHandleMat);}
-        mat4.multiply(scaleHandleMat, xFormWithPiv, scaleHandleMat); 
-        mat4.multiply(scaleHandleMat, parentMat, scaleHandleMat);
-        if (CollisionHelper.WithinRadius([scaleHandleMat[12], scaleHandleMat[13]],  
-                                        0.40, [xPos, yPos])) {
-            return { sceneNode: manipulator, handleType: "Scale" };
-        }*/
     }catch(err) {}
         // If no collisions, return 0.
         return 0;
@@ -347,6 +322,7 @@ function DrawManager(canvasId) {
     // This checks collision based on the xPos and yPos passed in.
     // Collision is checked against ALL Scene Nodes, their children, and their 
     // associated renderable objects. 
+    // This is used for selecting objects with the mouse.
     self.checkCollision = function(xPos, yPos, manipulator) {
         var i = 0;
         var x = 0;
@@ -357,7 +333,7 @@ function DrawManager(canvasId) {
         if (collisionWithManipulator !== 0)
         {
             // returns in the following format.
-            // { sceneNode: RenderableManipulator, handleType: "Scale" || "Rotate" || "Move" }
+            // { sceneNode: sceneNode, renderableObj: currRenderable }
             return collisionWithManipulator;
         }
         
@@ -371,9 +347,9 @@ function DrawManager(canvasId) {
                 var snMat = _sceneNodes[x].getXform().getXform();
                 mat4.multiply(wallMat, snMat, wallMat);
 
+                // If we're within range, return it.
                 if(CollisionHelper.WithinRadius([wallMat[12], wallMat[13]],  
                                         0.35, [xPos, yPos])){
-                    //return _sceneNodes[x];
                     var sceneAndObject = { sceneNode: _sceneNodes[x], renderableObj: currRenderable };
                     return sceneAndObject;
                 }
@@ -402,7 +378,7 @@ function DrawManager(canvasId) {
         var i, foundCollision;
         foundCollision = 0;
         
-        // Caution: This is a temporary hack...
+        // If manipulator was selected, do nothing.
         if (currSceneNode.getName() === "manipulator") {
             return 0;
         }
@@ -455,7 +431,7 @@ function DrawManager(canvasId) {
     
     // This checks collision based on the xPos and yPos passed in for the player character.
     // Uses similar code to the manipulator selection collision, except
-    // stripped out a lot of unnessary code. 
+    // stripped out a lot of unnessary code as it will be called much more often. 
     self.checkCollisionPlayer = function(xPos, yPos) {
         var i = 0;
         var x = 0;
@@ -490,15 +466,10 @@ function DrawManager(canvasId) {
     
     // Helper function, recusively checks all scene nodes and their renderable object.
     // Returns of 0 means nothing was found. 
-    // Return sceneNode returns the corresponding sceneNode.
+    // Return 0 to indicate no collision or -1 to indicate collision.
     self.recursiveCheckCollisionPlayer = function(xPos, yPos, currSceneNode) {
         var i, foundCollision;
         foundCollision = 0;
-        
-        // Caution: This is a temporary hack...
-        if (currSceneNode.getName() === "manipulator") {
-            return 0;
-        }
         
        // Check all children of the parent scene node. 
         for (i = 0; i < currSceneNode.sizeChildren(); i++){

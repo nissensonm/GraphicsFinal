@@ -23,7 +23,7 @@ Transform.prototype.Contains = function (point) {
            point[1] <= this.top();      // point.y is below top bound
 };
 
-// Used to let the player "squeeze" into areas without having to worry about exactly
+// Used to let the player "squeeze" into areas without having to worry about exact
 // collision. Makes it feel more natural. 
 // Feet is a little more strict so they do not clip as that looks weird. 
 // Allow for more collision with the hat as that looks a bit more normal. 

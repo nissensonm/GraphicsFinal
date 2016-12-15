@@ -180,15 +180,6 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     function dcYToWcY(canvasHeight, dc, camera) {
         return dc / canvasHeight * camera.getWCHeight();
     }
-
-        
-/*   Camera.prototype.getWCCenter = function () { return this.mWCCenter; };
-Camera.prototype.setWCWidth = function (width) { this.mWCWidth = width; };
-Camera.prototype.getWCWidth = function () { return parseInt(this.mWCWidth); };
-Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mViewport[3] / this.mViewport[2]; };*/
-        
-//    $scope.addNewSceneNode(Math.round(dragStart[0] / $scope.moveSnap) * $scope.moveSnap, 
-//                                       Math.round(dragStart[1] / $scope.moveSnap) * $scope.moveSnap);
        
     // Used to find the snapped value.
     $scope.getSnappedValue = function(val){
@@ -200,7 +191,8 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         var center = mainView.getWCCenter();
         var height = mainView.getWCHeight();
         var width = mainView.getWCWidth();
-        console.log("C / W / H: " + center + " " + width + " " + height);
+
+        // Define our corners.
         var bottomLeftCorner = [$scope.getSnappedValue(center[0] - (width / 2)), 
                                 $scope.getSnappedValue(center[1] - (height / 2))];
         var bottomRightCorner = [$scope.getSnappedValue(center[0] + (width / 2)), 
@@ -210,6 +202,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         var topLeftCorner = [$scope.getSnappedValue(center[0] - (width / 2)), 
                                 $scope.getSnappedValue(center[1] + (height / 2))];
 
+        // Draw the corners. Walls labled as "doNotDelete" ignore any delete functions.
         $scope.addNewSceneNode(bottomLeftCorner[0], bottomLeftCorner[1], "doNotDelete");
         $scope.addNewSceneNode(bottomRightCorner[0], bottomRightCorner[1], "doNotDelete");
         $scope.addNewSceneNode(topLeftCorner[0], topLeftCorner[1], "doNotDelete");
@@ -224,7 +217,6 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
             $scope.addNewSceneNode(topRightCorner[0] -= $scope.moveSnap, topRightCorner[1], "doNotDelete");
         while (topLeftCorner[1] > bottomLeftCorner[1])
             $scope.addNewSceneNode(topLeftCorner[0], topLeftCorner[1] -= $scope.moveSnap, "doNotDelete");
-        //console.log(bottomLeftCorner[0] + " " + bottomLeftCorner[1]);
     };
         
     // Draws a new wall based on the delta passed in from the manipulator's target.
@@ -246,8 +238,6 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     
     // Draws a new wall when dragging out walls.
     $scope.addChildOfParentWall = function(x, y) {
-        // Get manipulator's current position.
-
         // Create new wall, have manipulator pass it to its parent and add it.
         var newWall = new MazePiece(drawMgr.getSquareShader(), "newWallChild", x, y);
         manipulator.addNewBlockAsChild(newWall);
@@ -431,9 +421,9 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                 // If collisionSceneNode !== 0, then the scene node was returned.
                 // If it is 0 then no collision occured.
                 if (collisionSceneNode !== 0) {
-                    // Do something with the returned XForm or object: 
-                    // var sceneXForm = collisionSceneNode.sceneNode.getXform();
-                    // var wallXForm = collisionSceneNode.wallObject.getXform();
+                    // Do something with the returned XForm or object,
+                    // in this case if it was the manipulator, do not modify it.
+                    // Otherwise, if not the manipulator, select a new manipulator.
                     if (collisionSceneNode.sceneNode.getName() === "manipulator") {
                         dragging = collisionSceneNode.handleType;
                         dragTargetXform = collisionSceneNode.sceneNode.getXform();
@@ -443,16 +433,17 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                         drawMgr.selectSceneNode(collisionSceneNode.sceneNode);
                     }
                 } else {
-                    //Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap
+                    // If we clicked in an area without a wall,
+                    // and not in run mode, add a wall.
                     if (!$scope.runMode) 
-                    $scope.addNewSceneNode($scope.getSnappedValue(dragStart[0]), 
+                        $scope.addNewSceneNode($scope.getSnappedValue(dragStart[0]), 
                                            $scope.getSnappedValue(dragStart[1]));
                                            
-                    // No object is selected
-                    manipulator.setParent( drawMgr.getLastSceneNode());
+                    // Select the last scene node drawn.
+                    manipulator.setParent( drawMgr.getLastSceneNode() );
                 }
                 break;
-            case 3: // handle RMB
+            case 3: // handle RMB. Do nothing in this case.
                 break;
             default:
                 console.log("Unsupported key/button received: " + $event.which);
@@ -464,8 +455,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         // Something was being dragged
         if (dragging !== undefined) {
             dragging = undefined;
-        } //else { // Something was being dragged
-        //}
+        } 
     };
 
     $scope.onClientMouseMove = function ($event) {
@@ -475,9 +465,6 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         switch ($event.which) {
         case 1: // left
             try {
-               // var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
-                //    pivot =  dragTargetXform.getPivot();
-                //    
                //Unhighlight the currently highlighted region on drag click.
                 drawMgr.selectSceneNode(undefined, undefined);
                 
@@ -494,40 +481,6 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                     }
  
                 }
-                /*if (dragging === "Scale") {
-                        // scale down by 1000 to make it feel smoother.
-                        mDelta[0] = mDelta[0] / 1000;
-                        //mDelta[1] = mDelta[1] / 1000;
-                    manipulator.scaleParentWidth(mDelta[0]);
-                } else if (dragging === "Move") {
-                    // Movement is relative to the pivot, but the translation won't be the same WC position...
-                  //  manipulator.moveParent(
-                  //      Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap,
-                  //      Math.round((wcMPos[1] - pivot[1]) / $scope.moveSnap) * $scope.moveSnap
-                    //    );
-                } else if (dragging === "Rotate") {
-                    // pivot is the point to rotate about
-                    // calculate distance in x and y from the pivot point
-                    var fromCenter = [wcMPos[0] - pivot[0], wcMPos[1] - pivot[1]],
-                        // Compute the angle of the triangle made from the two sides on the last line
-                        angle = Math.atan(fromCenter[1] / fromCenter[0]) - Math.PI; // sin / cos
-
-                    // Domain of arctan is ( -PI/2, PI/2 ), only half of a circle...
-                    if (fromCenter[0] >= 0) {
-                        angle -= Math.PI;
-                    }
-
-                    // Fix angle offset
-                    angle -= Math.PI / 2;
-
-                    if ($scope.rotationSnap) {
-                        var snap = parseInt($scope.rotationSnap) * Math.PI / 180;
-                        angle = Math.round(angle / snap) * snap; // round to nearest 90 degree angle, in radians
-                    }
-                    manipulator.rotateParent(angle);
-                }
-                requestCanvasDraw = true;
-                break;*/
             }
             catch(err) { }
         }
@@ -544,13 +497,10 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         $scope.canvasMouse.refreshBounds();
     }, 500);
     
-    // Set up demo hierarchy
+    // Draw initial wall.
     var piece = new MazePiece(drawMgr.getSquareShader(), "doNotDelete", mainView.getWCCenter(), mainView.getWCHeight());
     drawMgr.addSceneNode(piece);
-   // var kid = new MazePiece(drawMgr.getSquareShader(), "firstGen", 1, -3);
-   // piece.addAsChild(kid);
-  //  var grandkid = new MazePiece(drawMgr.getSquareShader(), "secondGen", 2, -4);
-  //  kid.addAsChild(grandkid);
+
     manipulator.setParent(piece);
     
     // Draw borders
@@ -559,9 +509,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     // Build character
     player.Character = new Wizard(drawMgr.getSquareShader(), "A Powerful Wizard", 0, 0);
     player.Xform = player.Character.getXform();
-   // drawMgr.addSceneNode(player.Character);
- //   var star = new Star(drawMgr.getCircleShader(), "star", -.5, 0);
-   // player.Character.addAsChild(star);
+
     
     mazeStart.setColor([1, 1, 1, 1]);
     mazeStart.getXform().setPosition(-6.5, 4.5);
