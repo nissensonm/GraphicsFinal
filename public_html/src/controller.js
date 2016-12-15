@@ -80,7 +80,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             move: function (x, y) {
                 var pos = this.Character.getXform().getPosition();
                 // Check if collision is occuring. If anything other than 0 is returned, a collision occured.
-                if (drawMgr.checkCollision(pos[0] + x, pos[1] + y, manipulator) === 0)
+                if (drawMgr.checkCollisionPlayer(pos[0] + x + 0.5, pos[1] + y + 0.5) === 0)
                     this.Xform.setPosition(pos[0] + x, pos[1] + y);
             }
         },
@@ -104,7 +104,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             mainView.setWCCenter(ppos[0], ppos[1]);
 
             if (player.Moving !== undefined) {
-                console.log(player.Moving);
+//                console.log(player.Moving);
                 // Oh so hacky :)
                 if (player.Moving === "Right") {
                     player.move(player.Speed, 0);
@@ -141,7 +141,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         }
         requestCanvasDraw = false; // clear flag
         
-        console.log('DRAW ' + Date.now());
+//        console.log('DRAW ' + Date.now());
         
         drawMgr.drawShapes(mainView);
         mazeStart.draw(mainView);
