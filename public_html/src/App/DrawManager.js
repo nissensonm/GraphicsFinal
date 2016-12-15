@@ -235,11 +235,18 @@ function DrawManager(canvasId) {
     self.deleteScene = function(xformToDelete) {
         var i, found = 0;
         for (i in _sceneNodes) {
+            // Keep checking until we find the scene node corresponding the the scene node.
             if (_sceneNodes[i].getXform() === xformToDelete) {
-                if (_sceneNodes[i] === _selectedSceneNode) {
-                    self.selectSceneNode(undefined); // clear selection before deleting
+                // Make sure the scene node is safe to delete.
+                if (_sceneNodes[i].getName() !== "doNotDelete"){
+                    // If the scene node 
+                    if (_sceneNodes[i] === _selectedSceneNode) {
+                        self.selectSceneNode(undefined); // clear selection before deleting
+                    }
+                    // Splice out just the one parent node.
+                    _sceneNodes.splice(i, 1);
+                    return 0;
                 }
-                _sceneNodes.splice(i);
             }
             else {
                 // Recursively check the rest of the children for the correct scene node.
@@ -256,8 +263,7 @@ function DrawManager(canvasId) {
     // Check down the tree for the SN
     self.findSceneToDeleteRecursive = function(xformToDelete, currSceneNode) {
         var i, found = 0;
-        
-        // 
+
         if (currSceneNode.getName() === "manipulator") {
             return 0;
         }
@@ -295,7 +301,7 @@ function DrawManager(canvasId) {
         var i = 0;
         
         // Calculate the collision boundaries for move handle.
-        if (otherParents.length > 0)
+      if (otherParents.length > 0)
             for (i in otherParents){
                 mat4.multiply(moveHandleMat, otherParents[i], moveHandleMat);}
         mat4.multiply(moveHandleMat, xFormWithPiv, moveHandleMat);   
@@ -305,7 +311,8 @@ function DrawManager(canvasId) {
             return { sceneNode: manipulator, handleType: "Move" };
         }
         
-        // Calculate the collision boundaries for rotation handle.
+        // Older unused code, likely safe to delete.
+        /*// Calculate the collision boundaries for rotation handle.
         var rotateHandleMat = manipulatorXforms.rotateHandle.getXform().getXform();
         if (otherParents.length > 0)
             for (i in otherParents){
@@ -327,7 +334,7 @@ function DrawManager(canvasId) {
         if (CollisionHelper.WithinRadius([scaleHandleMat[12], scaleHandleMat[13]],  
                                         0.40, [xPos, yPos])) {
             return { sceneNode: manipulator, handleType: "Scale" };
-        }
+        }*/
     }catch(err) {}
         // If no collisions, return 0.
         return 0;
@@ -435,6 +442,79 @@ function DrawManager(canvasId) {
                                         0.35, [xPos, yPos])){
                 var sceneAndObject = { sceneNode: currSceneNode, wallObject: currRenderable, wallMat: snMats };
                 return sceneAndObject;
+            }
+        }
+
+        // Return 0 to indicate no collision detected.
+        return 0;
+    };
+    
+    // This checks collision based on the xPos and yPos passed in for the player character.
+    // Uses similar code to the manipulator selection collision, except
+    // stripped out a lot of unnessary code. 
+    self.checkCollisionPlayer = function(xPos, yPos) {
+        var i = 0;
+        var x = 0;
+        var foundCollision = 0;
+        
+        // First check all renderables of of top-level parent scene nodes.
+        // Done outside of recursion to make logic easier.
+        for (x in _sceneNodes){
+            for (i = 0; i < _sceneNodes[x].length; i++ ){
+                var currRenderable = _sceneNodes[x].getRenderableAt(i);
+                var wall = currRenderable.getXform();
+                if(wall.LessStrictContains([xPos, yPos])){
+                    //return -1 to indicate collision.
+                    return -1;
+                }
+            }
+        }
+        
+        i = 0;
+        // Now recursively check all children of scene nodes.
+        for (i in _sceneNodes) {
+             foundCollision = self.recursiveCheckCollisionPlayer(xPos, yPos, _sceneNodes[i]);
+            // If a value that is not 0 is returned, then some sort of collision was found.  
+            // Stop iterating and return it back up.
+            if (foundCollision !== 0){
+                return foundCollision;
+            }
+        }
+        // If nothing was found, return 0.
+        return 0;
+    };
+    
+    // Helper function, recusively checks all scene nodes and their renderable object.
+    // Returns of 0 means nothing was found. 
+    // Return sceneNode returns the corresponding sceneNode.
+    self.recursiveCheckCollisionPlayer = function(xPos, yPos, currSceneNode) {
+        var i, foundCollision;
+        foundCollision = 0;
+        
+        // Caution: This is a temporary hack...
+        if (currSceneNode.getName() === "manipulator") {
+            return 0;
+        }
+        
+       // Check all children of the parent scene node. 
+        for (i = 0; i < currSceneNode.sizeChildren(); i++){
+            // Add parent mat.
+            foundCollision = self.recursiveCheckCollisionPlayer(xPos, yPos, currSceneNode.getChildAt(i));
+            // If foundCollision is no longer 0, then a collision was found. 
+            // Stop recursion and return it up.
+            if (foundCollision !== 0){
+                return foundCollision;
+            }
+        }
+        
+        // Check all renderable objects inside passed in scene node for collision.
+        for (i = 0; i < currSceneNode.size(); i++ ){
+            var currRenderable = currSceneNode.getRenderableAt(i);
+            var wall = currRenderable.getXform();
+
+            // If collision detected, return -1
+            if(wall.LessStrictContains([xPos, yPos])){
+                return -1;
             }
         }
 

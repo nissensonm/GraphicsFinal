@@ -23,6 +23,17 @@ Transform.prototype.Contains = function (point) {
            point[1] <= this.top();      // point.y is below top bound
 };
 
+// Used to let the player "squeeze" into areas without having to worry about exactly
+// collision. Makes it feel more natural. 
+// Feet is a little more strict so they do not clip as that looks weird. 
+// Allow for more collision with the hat as that looks a bit more normal. 
+Transform.prototype.LessStrictContains = function (point) {
+    return point[0] > this.left() + 0.1 &&   // point.x is right of left bound
+           point[1] > this.bottom() + 0.14 && // point.y is above bottom bound
+           point[0] < this.right() - 0.1 &&  // point.x is left of right bound
+           point[1] < this.top() - 0.05;      // point.y is below top bound
+};
+
 CollisionHelper.WithinRadius = function (circlePos, circleRad, point) {
     // distance formula: sqrt( (x-h)^2 + (y-k)^2 )
     var distanceFromCircleCenter = Math.sqrt(Math.pow(point[0] - circlePos[0],2) + Math.pow(point[1] - circlePos[1],2));
