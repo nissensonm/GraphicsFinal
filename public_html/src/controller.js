@@ -355,50 +355,55 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         }
         else if ($event.keyCode === 69){
             // E, for erase.
-            if (manipulator.isManipulatorSet()) {
-                $scope.deleteSelectedObject();
+            // Only erase if we're not in run mode. 
+            if (!$scope.runMode) {
+                if (manipulator.isManipulatorSet()) {
+                    $scope.deleteSelectedObject();
+                }
             }
         }
     };
 
     // Handle client mouse clicks and send to model
     $scope.onClientMouseClick = function ($event) {
-        switch ($event.which) {
-        case 1: // handle LMB
-            dragStart[0] = mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event));
-            dragStart[1] = mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event));
-            requestCanvasDraw = true;
-            // Returns a non-0 value if a collision occured with the mouse.            
-            var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)),
-                mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)), manipulator);
+        if (!$scope.runMode) {
+            switch ($event.which) {
+            case 1: // handle LMB
+                dragStart[0] = mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event));
+                dragStart[1] = mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event));
+                requestCanvasDraw = true;
+                // Returns a non-0 value if a collision occured with the mouse.            
+                var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)),
+                    mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)), manipulator);
 
-            // If collisionSceneNode !== 0, then the scene node was returned.
-            // If it is 0 then no collision occured.
-            if (collisionSceneNode !== 0) {
-                // Do something with the returned XForm or object: 
-                // var sceneXForm = collisionSceneNode.sceneNode.getXform();
-                // var wallXForm = collisionSceneNode.wallObject.getXform();
-                if (collisionSceneNode.sceneNode.getName() === "manipulator") {
-                    dragging = collisionSceneNode.handleType;
-                    dragTargetXform = collisionSceneNode.sceneNode.getXform();
+                // If collisionSceneNode !== 0, then the scene node was returned.
+                // If it is 0 then no collision occured.
+                if (collisionSceneNode !== 0) {
+                    // Do something with the returned XForm or object: 
+                    // var sceneXForm = collisionSceneNode.sceneNode.getXform();
+                    // var wallXForm = collisionSceneNode.wallObject.getXform();
+                    if (collisionSceneNode.sceneNode.getName() === "manipulator") {
+                        dragging = collisionSceneNode.handleType;
+                        dragTargetXform = collisionSceneNode.sceneNode.getXform();
+                    } else {
+                        manipulator.setOtherParents(collisionSceneNode.wallMat);
+                        manipulator.setParent(collisionSceneNode.sceneNode);
+                        drawMgr.selectSceneNode(collisionSceneNode.sceneNode);
+                    }
                 } else {
-                    manipulator.setOtherParents(collisionSceneNode.wallMat);
-                    manipulator.setParent(collisionSceneNode.sceneNode);
-                    drawMgr.selectSceneNode(collisionSceneNode.sceneNode);
+                    // No object is selected
+                    manipulator.setParent(undefined);
+                    //Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap
+                    if (!$scope.runMode) 
+                    $scope.addNewSceneNode($scope.getSnappedValue(dragStart[0]), 
+                                           $scope.getSnappedValue(dragStart[1]));
                 }
-            } else {
-                // No object is selected
-                manipulator.setParent(undefined);
-                //Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap
-                if (!$scope.runMode) 
-                $scope.addNewSceneNode($scope.getSnappedValue(dragStart[0]), 
-                                       $scope.getSnappedValue(dragStart[1]));
+                break;
+            case 3: // handle RMB
+                break;
+            default:
+                console.log("Unsupported key/button received: " + $event.which);
             }
-            break;
-        case 3: // handle RMB
-            break;
-        default:
-            console.log("Unsupported key/button received: " + $event.which);
         }
     };
 
