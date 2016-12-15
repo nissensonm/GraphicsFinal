@@ -127,8 +127,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
                 if (player.Character.getXform().Contains(mazeFinish.getXform().getPosition())) {
                     // Player won. End the round.
                     $scope.retry();
-                    if ($scope.actualTime < $scope.fastestTime) {
-                        $scope.fastestTime = $scope.actualTime;
+                    if ($scope.fastestTime < 0 || $scope.actualTime < $scope.fastestTime) {
+                        $scope.fastestTime = $scope.elapsedTime;
                     }
                     $scope.timesWon++;
                 }
@@ -285,7 +285,7 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
             mainView.setWCCenter(0, 0);
             
             // Reset statistics as maze layout may change
-            $scope.actualTime = -1;
+            $scope.actualTime = 0;
             $scope.timesWon = 0;
             $scope.fastestTime = -1;
         }
@@ -300,6 +300,8 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     $scope.retry = function () {
         $scope.paused = true;
         $scope.hint = false;
+        $scope.actualTime = 0;
+        $scope.elapsedTime = 0;
         player.Moving = undefined;
         var tPos = mazeStart.getXform().getPosition();
         // Move the player to the maze entrance
