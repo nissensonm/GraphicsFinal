@@ -214,6 +214,10 @@ function DrawManager(canvasId) {
     self.addSceneNode = function (node) {
         _sceneNodes.push(node);
     };
+    
+    self.getLastSceneNode = function () {
+        return _sceneNodes[_sceneNodes.length - 1];
+    };
 
     PrimitiveShape = Object.freeze({
         Square : {

@@ -243,6 +243,19 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         
         return newWall;
     };
+    
+    // Draws a new wall when dragging out walls.
+    $scope.addChildOfParentWall = function(x, y) {
+        // Get manipulator's current position.
+
+        // Create new wall, have manipulator pass it to its parent and add it.
+        var newWall = new MazePiece(drawMgr.getSquareShader(), "newWallChild", x, y);
+        manipulator.addNewBlockAsChild(newWall);
+
+        requestCanvasDraw = true;
+        
+        return newWall;
+    };
 
     // Add a new top-level scene node at the coordinates provided.
     $scope.addNewSceneNode = function(xPos, yPos, name){
@@ -407,7 +420,11 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                 dragStart[0] = mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event));
                 dragStart[1] = mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event));
                 requestCanvasDraw = true;
-                // Returns a non-0 value if a collision occured with the mouse.            
+                
+                //Unhighlight the currently highlighted region on click.
+                drawMgr.selectSceneNode(undefined, undefined);
+                
+                // Returns a non-0 value if a collision occured with the mouse.      
                 var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)),
                     mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)), manipulator);
 
@@ -426,12 +443,13 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                         drawMgr.selectSceneNode(collisionSceneNode.sceneNode);
                     }
                 } else {
-                    // No object is selected
-                    manipulator.setParent(undefined);
                     //Math.round((wcMPos[0] - pivot[0]) / $scope.moveSnap) * $scope.moveSnap
                     if (!$scope.runMode) 
                     $scope.addNewSceneNode($scope.getSnappedValue(dragStart[0]), 
                                            $scope.getSnappedValue(dragStart[1]));
+                                           
+                    // No object is selected
+                    manipulator.setParent( drawMgr.getLastSceneNode());
                 }
                 break;
             case 3: // handle RMB
@@ -453,15 +471,30 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     $scope.onClientMouseMove = function ($event) {
         // Update mouse position data
         wcMPos = [mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)), mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event))];
-
         // Now process the actual input
         switch ($event.which) {
         case 1: // left
             try {
-                var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
-                    pivot =  dragTargetXform.getPivot();
+               // var mDelta = [wcMPos[0] - dragStart[0], wcMPos[1] - dragStart[1]],
+                //    pivot =  dragTargetXform.getPivot();
+                //    
+               //Unhighlight the currently highlighted region on drag click.
+                drawMgr.selectSceneNode(undefined, undefined);
+                
+                if (!$scope.runMode) {
+                    // Check if we're drawing near 
+                    var collisionSceneNode = drawMgr.checkCollision(mainView.mouseWCX($scope.canvasMouse.getPixelXPos($event)),
+                        mainView.mouseWCY($scope.canvasMouse.getPixelYPos($event)), manipulator);
+                    
+                    // If no collision occured.
+                    if (collisionSceneNode === 0) {
+                        // Add a child to the currently selected wall.
+                        $scope.addChildOfParentWall($scope.getSnappedValue(wcMPos[0]), $scope.getSnappedValue(wcMPos[1]));
 
-                if (dragging === "Scale") {
+                    }
+ 
+                }
+                /*if (dragging === "Scale") {
                         // scale down by 1000 to make it feel smoother.
                         mDelta[0] = mDelta[0] / 1000;
                         //mDelta[1] = mDelta[1] / 1000;
@@ -494,9 +527,9 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
                     manipulator.rotateParent(angle);
                 }
                 requestCanvasDraw = true;
-                break;
+                break;*/
             }
-            catch(err) {}
+            catch(err) { }
         }
     };
 
