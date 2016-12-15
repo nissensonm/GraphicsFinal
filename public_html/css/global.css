@@ -134,15 +134,15 @@ form>*, .panel>* {
 }
 
 .big-button {
-    width: 200px;
-    height: 70px;
-    font-size: 1.33em;
+    width: 170px;
+    height: 50px;
+    font-size: 1.05em;
     margin-top: 16px;
     margin-bottom: 16px;
 }
 
 .medium-button {
-    width: 180px;
+    width: 170px;
     height: 30px;
     font-size: 1.02em;
     margin-top: 8px;
