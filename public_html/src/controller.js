@@ -345,7 +345,7 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         requestCanvasDraw = true;
     };
     $scope.onClientKeyUp = function ($event) {
-        // W = 119, A = 97, S = 115, D = 100
+        // W = 87, A = 65, S = 83, D = 68
         // Keycodes on up are: 87, 65, 83, 68 for WASD respectively
         if ($scope.runMode &&
             ($event.keyCode === 87 || $event.keyCode === 65 ||
