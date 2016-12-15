@@ -33,13 +33,16 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
     $scope.rotationSnap = 1;
     $scope.drawMgr = drawMgr;
     $scope.runMode = false;
+    $scope.paused = true;
     $scope.hint = false;
     $scope.hintsRemaining = 3;
     $scope.hintTime = 0;
 
-    $scope.elapsedTime = 0;
-    $scope.fastestTime = 99999999999;
+    $scope.elapsedTime = -1;
+    $scope.actualTime = -1;
+    $scope.fastestTime = -1;
     $scope.timesWon = 0;
+    var lastUpdate = 0;
 
     // Potentially saves on canvas redraws by limiting the number of redraws
     // per second, where the update interval is determined by the constant
@@ -89,46 +92,48 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
 
     // Fired by redrawUpdateTimer. Controller-side update logic goes here.
     function update() {
-        //console.log('UPDATE ' + Date.now());
+        var delta = Date.now() - lastUpdate;
+        lastUpdate = Date.now();
 
         if ($scope.runMode) {
-            $scope.elapsedTime = (Date.now() - startTime) / 1000;
-            // 3 seconds of hint time per hint
-            if ($scope.hint && Date.now() - $scope.hintTime > 3000) {
-                $scope.hint = false;
-                $scope.hintTime = 0;
-                requestCanvasDraw = true;
-            }
-
             var ppos = player.Xform.getPosition();
             mainView.setWCCenter(ppos[0], ppos[1]);
-
-            if (player.Moving !== undefined) {
-//                console.log(player.Moving);
-                // Oh so hacky :)
-                if (player.Moving === "Right") {
-                    player.move(player.Speed, 0);
-                } else if (player.Moving === "Left") {
-                    player.move(-1 * player.Speed, 0);
-                } else if (player.Moving === "Down") {
-                    player.move(0, -1 * player.Speed);
-                } else if (player.Moving === "Up") {
-                    player.move(0, player.Speed);
-                } else {
-                    console.log("WHAT THE!? " + player.Moving);
+            
+            if (!$scope.paused) {
+                $scope.actualTime += delta / 1000;
+                $scope.elapsedTime = Math.round($scope.actualTime); // floating point bad
+                // 3 seconds of hint time per hint
+                if ($scope.hint && Date.now() - $scope.hintTime > 3000) {
+                    $scope.hint = false;
+                    $scope.hintTime = 0;
                 }
-                requestCanvasDraw = true;
-            }
 
-            if (player.Character.getXform().Contains(mazeFinish.getXform().getPosition())) {
-                // Player won. End the round.
-                $scope.toggleRunMode();
-                if ($scope.elapsedTime < $scope.fastestTime) {
-                    $scope.fastestTime = $scope.elapsedTime;
+                if (player.Moving !== undefined) {
+                    // Oh so hacky :)
+                    if (player.Moving === "Right") {
+                        player.move(player.Speed, 0);
+                    } else if (player.Moving === "Left") {
+                        player.move(-1 * player.Speed, 0);
+                    } else if (player.Moving === "Down") {
+                        player.move(0, -1 * player.Speed);
+                    } else if (player.Moving === "Up") {
+                        player.move(0, player.Speed);
+                    } else {
+                        console.log("WHAT THE!? " + player.Moving);
+                    }
+
                 }
-                $scope.timesWon++;
-                requestCanvasDraw = true;
+
+                if (player.Character.getXform().Contains(mazeFinish.getXform().getPosition())) {
+                    // Player won. End the round.
+                    $scope.retry();
+                    if ($scope.actualTime < $scope.fastestTime) {
+                        $scope.fastestTime = $scope.actualTime;
+                    }
+                    $scope.timesWon++;
+                }
             }
+            requestCanvasDraw = true;
         }
     }
 
@@ -141,13 +146,11 @@ module.controller('mp5Controller', ["$scope", "$interval", function ($scope, $in
         }
         requestCanvasDraw = false; // clear flag
         
-//        console.log('DRAW ' + Date.now());
-        
         drawMgr.drawShapes(mainView);
         mazeStart.draw(mainView);
         mazeFinish.draw(mainView);
         
-        if ($scope.runMode) {
+        if ($scope.runMode && !$scope.paused) {
             player.Character.draw(mainView);
             // Draw maze to the hint view
             if ($scope.hint) {
@@ -273,16 +276,39 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
             manipulator.setParent(undefined);
             drawMgr.selectSceneNode(undefined);
         } else {
+            // Turn off run mode
             // Zoom back out to the full view
             mainView.setWCWidth(15);
             mainView.setWCCenter(0, 0);
-            // Turn off run mode
+            
+            // Reset statistics as maze layout may change
+            $scope.actualTime = -1;
+            $scope.timesWon = 0;
+            $scope.fastestTime = -1;
         }
         requestCanvasDraw = true;
     };
     
+    $scope.pause = function () {
+        $scope.paused = !$scope.paused;
+        requestCanvasDraw = true;
+    };
+    
+    $scope.retry = function () {
+        $scope.paused = true;
+        $scope.hint = false;
+        player.Moving = undefined;
+        var tPos = mazeStart.getXform().getPosition();
+        // Move the player to the maze entrance
+        player.Character.getXform().setPosition(tPos[0], tPos[1]);
+        $scope.hintsRemaining = 3; // reset available hints for the player
+        startTime = Date.now();
+
+        requestCanvasDraw = true;
+    };
+    
     $scope.giveHint = function () {
-        if ($scope.hintsRemaining < 1) {
+        if ($scope.hintsRemaining < 1 || $scope.paused) {
             return;
         } else {
             $scope.hintsRemaining--;
@@ -295,6 +321,10 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
     $scope.onClientButtonPress = function ($event) {
         var newBlock = undefined;
         
+        if ($scope.paused) {
+            return;
+        }
+
         if ($event.keyCode === 119){
             // W
             if ($scope.runMode) {
@@ -345,6 +375,11 @@ Camera.prototype.getWCHeight = function () { return this.getWCWidth() * this.mVi
         requestCanvasDraw = true;
     };
     $scope.onClientKeyUp = function ($event) {
+        
+        if ($scope.paused) {
+            return;
+        }
+        
         // W = 119, A = 97, S = 115, D = 100
         // Keycodes on up are: 87, 65, 83, 68 for WASD respectively
         if ($scope.runMode &&

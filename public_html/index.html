@@ -58,8 +58,14 @@ and open the template in the editor.
                             <tr>
                                 <td>
                                     <label>
-                                        <button ng-click="toggleRunMode()">
+                                        <button ng-click="toggleRunMode()" class="big-button">
                                             {{runMode ? "Edit Mode" : "Run Mode"}}
+                                        </button>
+                                        <button ng-show="runMode" ng-click="pause()" class="big-button">
+                                            {{paused ? "Unpause" : "Pause"}}
+                                        </button>
+                                        <button ng-show="runMode" ng-click="retry()">
+                                            Retry
                                         </button>
                                     </label>
                                 </td>
@@ -92,14 +98,18 @@ and open the template in the editor.
                                     <h3>Instructions</h3>
                                     <ul>
                                         <li>Use WASD to control your avatar (the wizard).</li>
-                                        <li>Find your way to the exit of the maze, the portal to eternal riches.</li>
+                                        <li>Find your way to the exit of the maze, the portal to eternal riches and your freedom.</li>
                                         <li>
                                             If you get stuck and need a hint, you can take a peek at the maze layout 
                                             for a few seconds. You have 3 peeks per attempt. Click the hint button below.
+                                            You can't get hints while the game is paused.
+                                        </li>
+                                        <li>
+                                            Clicking the button to return to edit mode will clear your current progress
                                         </li>
                                     </ul>
                                     
-                                    <button ng-click="giveHint()">
+                                    <button ng-show="!paused" ng-click="giveHint()" class="big-button">
                                         Get Hint ({{hintsRemaining}} remaining)
                                     </button>
                                 </td>
@@ -108,8 +118,8 @@ and open the template in the editor.
                                 <td>
                                     <h3>Game Statistics</h3>
                                     <ul>
-                                        <li>{{runMode ? "Current" : "Last"}} Elapsed Time: {{elapsedTime}} seconds</li>
-                                        <li>Fastest Win Time: {{fastestTime}} seconds</li>
+                                        <li>{{runMode ? "Current" : "Last"}} Elapsed Time: {{elapsedTime >= 0 ? elapsedTime + " seconds" : "N/A"}}</li>
+                                        <li>Fastest Win Time: {{fastestTime >= 0 ? parseInt(fastestTime) + " seconds" : "N/A"}}</li>
                                         <li>Times Won: {{timesWon}}</li>
                                     </ul>
                                 </td>
